@@ -203,7 +203,7 @@ Resources:
         'Name': 'Ubuntu Docker Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.0.1
 
   # Recipes
   
