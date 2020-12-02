@@ -221,7 +221,7 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
         'lib:dockerhost': true
-      Version: 1.0.0
+      Version: 1.0.1
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -237,7 +237,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": true
-      Version: 1.0.0
+      Version: 1.0.1
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -252,7 +252,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.0
+      Version: 1.0.1
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -267,7 +267,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": false
-      Version: 1.0.0
+      Version: 1.0.1
 
   # Infrastructure Configuration 
 
