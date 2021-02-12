@@ -215,6 +215,11 @@ Resources:
       Platform: Linux
       SupportedOsVersions:
         - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Matommo Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
 
   # Recipes
   
