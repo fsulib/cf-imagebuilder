@@ -511,7 +511,7 @@ Resources:
     Properties:
       Description: Builds and distributes a MatomoHost 1804 image.
       DistributionConfiguration: !Ref MatomoHostUbuntu1804Distribution
-      EnhancedMetadataEnabled: true
+      EnhancedImageMetadataEnabled: true
       ImageRecipeArn: !Ref Ubuntu1804MatomoHostImageRecipe
       ImageTestsConfiguration:
         ImageTestsEnabled: true
