@@ -70,6 +70,14 @@ Resources:
         - arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder
       Path: '/instance_roles/'
       Policies:
+        - PolicyName: S3DownloadPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - imagebuilder:S3Download
+                Resource: '*'
         - PolicyName: LogBucketPolicy
           PolicyDocument:
             Version: 2012-10-17
@@ -82,6 +90,10 @@ Resources:
                 Action:
                   - s3:PutObject
                 Resource: !Sub arn:aws:s3:::${LoggingBucket}/image-builder/*
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: arn:aws:s3:::ec2.lib.fsu.edu/stats/*
       Tags:
         - Key: Name
           Value: Image Builder IAM Role
@@ -219,7 +231,7 @@ Resources:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.0.1
 
   # Recipes
   
@@ -299,7 +311,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.0
+      Version: 1.0.1
       
   # Infrastructure Configuration 
 
