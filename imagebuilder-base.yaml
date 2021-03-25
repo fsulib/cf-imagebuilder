@@ -198,7 +198,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.2
+      Version: 1.0.3
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -265,7 +265,7 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
         'lib:dockerhost': true
-      Version: 1.0.3
+      Version: 1.0.4
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -281,7 +281,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": true
-      Version: 1.0.3
+      Version: 1.0.4
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -296,7 +296,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.3
+      Version: 1.0.4
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -311,7 +311,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": false
-      Version: 1.0.3
+      Version: 1.0.4
 
   Ubuntu1804MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -327,7 +327,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.2
+      Version: 1.0.3
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -343,7 +343,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.3
+      Version: 1.0.4
       
       
   # Infrastructure Configuration 
