@@ -78,6 +78,18 @@ Resources:
                 Action:
                   - imagebuilder:S3Download
                 Resource: '*'
+        - PolicyName: BucketPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - s3:ListBucket
+                Resource: arn:aws:s3:::ec2.lib.fsu.edu
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: arn:aws:s3:::ec2.lib.fsu.edu/*
         - PolicyName: LogBucketPolicy
           PolicyDocument:
             Version: 2012-10-17
@@ -90,10 +102,6 @@ Resources:
                 Action:
                   - s3:PutObject
                 Resource: !Sub arn:aws:s3:::${LoggingBucket}/image-builder/*
-              - Effect: Allow
-                Action:
-                  - s3:GetObject
-                Resource: arn:aws:s3:::ec2.lib.fsu.edu/stats/*
       Tags:
         - Key: Name
           Value: Image Builder IAM Role
