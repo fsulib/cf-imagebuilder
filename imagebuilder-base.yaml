@@ -369,13 +369,13 @@ Resources:
         "lib:dockerhost": false
       Version: 1.0.5
       
-  Ubuntu1804AnsibleImageRecipe:
+  Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetATt UbuntuInstallAnsibleComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAnsibleComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Ansible and AWS collection.
       Name: Ansible Image for Ubuntu 18_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-18-lts-x86/x.x.x
