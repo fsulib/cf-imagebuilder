@@ -257,6 +257,22 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.3
 
+  UbuntuInstallAnsibleComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation.'
+      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-ansible.yaml
+      Description: Installs Ansible onto an Ubuntu base image.
+      Name: Install Ansible
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Installation Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
   # Recipes
   
   Ubuntu1804DockerHostImageRecipe:
@@ -353,6 +369,21 @@ Resources:
         "lib:dockerhost": false
       Version: 1.0.5
       
+  Ubuntu1804AnsibleImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
+        - ComponentArn: !GetATt UbuntuInstallAnsibleComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Ansible and AWS collection.
+      Name: Ansible Image for Ubuntu 18_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-18-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 18.04
+        "lib:dockerhost": false
+      Version: 1.0.0
       
   # Infrastructure Configuration 
 
@@ -497,6 +528,25 @@ Resources:
         "Name": Drupal8Host Ubuntu 1804 Image Distribution
         "lib:created-by": !Ref Creator
 
+  AnsibleHostUbuntu1804Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 1804 AnsibleHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: AnsibleHost-Ubuntu-1804
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 1804 AnsibleHost
+            Name: AnsibleHost-Ubuntu-1804_{{imagebuilder:buildDate}}
+          Region: !Ref AWS::Region
+      Name: AnsibleHost Ubuntu 1804 Image Distribution
+      Tags:
+        "Name": AnsibleHost Ubuntu 1804 Image Distribution
+        "lib:created-by": !Ref Creator
+
   # Pipeline Configurations
 
   # TODO Automated build scheduling based on dependency updates
@@ -615,7 +665,26 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu1804
         'lib:dockerhost': false
-  
+
+  Ubuntu1804AnsibleHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes an AnsibleHost 1804 image.
+      DistributionConfigurationArn: !Ref AnsibleHostUbuntu1804Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu1804AnsibleHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: AnsibleHost Pipeline for Ubuntu 1804
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 1804 AnsibleHost Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu1804
+        'lib:dockerhost': false
+
 Outputs:
   CompUbuntuBaseUpdateArn:
     Value: !Ref UbuntuBaseUpdateComponent
