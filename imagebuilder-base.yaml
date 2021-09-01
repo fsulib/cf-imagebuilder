@@ -287,7 +287,7 @@ Resources:
         'Name': 'Ubuntu Drupal Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.4
+      Version: 1.0.5
 
   # Recipes
   
@@ -415,7 +415,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": false
-      Version: 1.0.4
+      Version: 1.0.5
 
   # Infrastructure Configuration 
 
