@@ -45,6 +45,11 @@ Parameters:
     Description: Components are here.
     Type: String
 
+  ComponentPrefix:
+    Description: Object name prefix.
+    Type: String
+    Default: components
+
 Resources:
 
   # TODO: Rebuild the Dev stack so we get automatic public IPv4
@@ -178,7 +183,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Formalized version from a CF template.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-linux-update.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-linux-update.yaml
       Description: Updates the managed base image.
       Name: Patch Base Ubuntu Image
       Platform: Linux
@@ -195,7 +200,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Formalized version from a CF template.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-awstools-installation.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
       Name: Install AWS Tools and Dependencies
       Platform: Linux
@@ -212,7 +217,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Formalized version from a CF template.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-docker-installation.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-docker-installation.yaml
       Description: Installs the Docker GPG key, repo, application, and dependencies.
       Name: Install Docker
       Platform: Linux
@@ -229,7 +234,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Formalized version from a CF template.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-matomo-installation.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-matomo-installation.yaml
       Description: Installs Matomo's dependencies, downloads Matomo, and expands the archive.
       Name: Install Matomo
       Platform: Linux
@@ -245,7 +250,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Formalized version from a CF template.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-drupal-dependencies.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal-dependencies.yaml
       Description: Installs Drupal 8's dependencies.
       Name: Install Drupal8 Dependencies
       Platform: Linux
@@ -261,7 +266,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Initial creation.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-ansible.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-ansible.yaml
       Description: Installs Ansible onto an Ubuntu base image.
       Name: Install Ansible
       Platform: Linux
@@ -277,7 +282,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'New component.'
-      Uri: !Sub s3://${ComponentBucket}/imagebuilder/components/component-drupal7-dependencies.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal7-dependencies.yaml
       Description: Installs Drupal 7's dependencies.
       Name: Install Drupal7 Dependencies
       Platform: Linux
