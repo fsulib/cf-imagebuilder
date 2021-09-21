@@ -85,11 +85,11 @@ Resources:
               - Effect: Allow
                 Action: 
                   - s3:ListBucket
-                Resource: arn:aws:s3:::ec2.lib.fsu.edu
+                Resource: !Sub arn:aws:s3:::${ComponentBucket}
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: arn:aws:s3:::ec2.lib.fsu.edu/*
+                Resource: arn:aws:s3:::${ComponentBucket}/*
         - PolicyName: LogBucketPolicy
           PolicyDocument:
             Version: 2012-10-17
@@ -101,7 +101,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:PutObject
-                Resource: !Sub arn:aws:s3:::${LoggingBucket}/image-builder/*
+                Resource: !Sub arn:aws:s3:::${LoggingBucket}/imagebuilder/*
       Tags:
         - Key: Name
           Value: Image Builder IAM Role
