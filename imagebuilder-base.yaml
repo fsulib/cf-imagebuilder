@@ -41,6 +41,11 @@ Parameters:
     Description: Logs go here.
     Type: String
 
+  LoggingPrefix:
+    Description: Object name prefix.
+    Type: String
+    Default: imagebuilder
+
   ComponentBucket:
     Description: Components are here.
     Type: String
@@ -106,7 +111,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:PutObject
-                Resource: !Sub arn:aws:s3:::${LoggingBucket}/imagebuilder/*
+                Resource: !Sub arn:aws:s3:::${LoggingBucket}/${LoggingPrefix}/*
       Tags:
         - Key: Name
           Value: Image Builder IAM Role
@@ -434,8 +439,8 @@ Resources:
         - !Ref InstanceTypeTwo
       Logging:
         S3Logs:
-          S3BucketName: logging.lib.fsu.edu
-          S3KeyPrefix: image-builder
+          S3BucketName: !Ref LoggingBucket
+          S3KeyPrefix: !Ref LoggingPrefix
       Name: Simple Infrastructure Configuration
       ResourceTags:
         "lib:created-by": "ImageBuilder Service"
@@ -817,9 +822,19 @@ Outputs:
     Export:
       Name: LoggingBucket
 
+  LogPrefix:
+    Value: !Ref LoggingPrefix
+    Export:
+      Name: LoggingPrefix
+
   CompBucket:
     Value: !Ref ComponentBucket
     Export:
       Name: ComponentBucket
+
+  CompPrefix:
+    Value: !Ref ComponentPrefix
+    Export:
+      Name: ComponentPrefix
 
 # vim: set fdm=indent:
