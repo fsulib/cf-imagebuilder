@@ -99,7 +99,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: arn:aws:s3:::${ComponentBucket}/*
+                Resource: !Sub arn:aws:s3:::${ComponentBucket}/*
         - PolicyName: LogBucketPolicy
           PolicyDocument:
             Version: 2012-10-17
@@ -216,7 +216,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.4
+      Version: 1.0.0
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -233,7 +233,7 @@ Resources:
         'Name': 'Ubuntu Docker Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.0
 
   UbuntuInstallMatomoComponent:
     Type: AWS::ImageBuilder::Component
@@ -249,7 +249,7 @@ Resources:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.2
+      Version: 1.0.0
 
   UbuntuInstallDrupalDependenciesComponent:
     Type: AWS::ImageBuilder::Component
@@ -266,7 +266,7 @@ Resources:
         'Name': 'Ubuntu Drupal Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.5
+      Version: 1.0.0
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
@@ -282,7 +282,7 @@ Resources:
         'Name': 'Ubuntu Installation Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.0
 
   UbuntuInstallDrupal7DependenciesComponent:
     Type: AWS::ImageBuilder::Component
@@ -298,7 +298,7 @@ Resources:
         'Name': 'Ubuntu Drupal Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.6
+      Version: 1.0.0
 
   # Recipes
   
@@ -315,8 +315,8 @@ Resources:
       Tags:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
-        'lib:dockerhost': true
-      Version: 1.0.5
+        'lib:dockerhost': 'true'
+      Version: 1.0.0
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -331,8 +331,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
-        "lib:dockerhost": true
-      Version: 1.0.5
+        "lib:dockerhost": 'true'
+      Version: 1.0.0
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -346,8 +346,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
-        "lib:dockerhost": false
-      Version: 1.0.5
+        "lib:dockerhost": 'false'
+      Version: 1.0.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -361,8 +361,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
-        "lib:dockerhost": false
-      Version: 1.0.5
+        "lib:dockerhost": 'false'
+      Version: 1.0.0
 
   Ubuntu1804MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -377,8 +377,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
-        "lib:dockerhost": false
-      Version: 1.0.5
+        "lib:dockerhost": 'false'
+      Version: 1.0.0
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -393,8 +393,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
-        "lib:dockerhost": false
-      Version: 1.0.7
+        "lib:dockerhost": 'false'
+      Version: 1.0.0
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -409,8 +409,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
-        "lib:dockerhost": false
-      Version: 1.0.1
+        "lib:dockerhost": 'false'
+      Version: 1.0.0
 
   Ubuntu2004Drupal7HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -425,8 +425,8 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
-        "lib:dockerhost": false
-      Version: 1.0.6
+        "lib:dockerhost": 'false'
+      Version: 1.0.0
 
   Ubuntu2004Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -441,7 +441,7 @@ Resources:
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
-        "lib:dockerhost": false
+        "lib:dockerhost": 'false'
       Version: 1.0.0
       
   # Infrastructure Configuration 
@@ -666,7 +666,7 @@ Resources:
         Name: Ubuntu 1804 DockerHost Pipeline
         'lib:created-by': mshackelford
         'lib:distribution': Ubuntu1804
-        'lib:dockerhost': true
+        'lib:dockerhost': 'true'
     
   Ubuntu2004DockerHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -685,7 +685,7 @@ Resources:
         Name: Ubuntu 2004 DockerHost Pipeline
         'lib:created-by': mshackelford
         'lib:distribution': Ubuntu1804
-        'lib:dockerhost': true
+        'lib:dockerhost': 'true'
     
   Ubuntu1804StandardPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -704,7 +704,7 @@ Resources:
         Name: Ubuntu 1804 Standard Pipeline
         'lib:created-by': mshackelford
         'lib:distribution': Ubuntu1804
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
     
   Ubuntu2004StandardPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -723,7 +723,7 @@ Resources:
         Name: Ubuntu 2004 Standard Pipeline
         'lib:created-by': mshackelford
         'lib:distribution': Ubuntu2004
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
 
   Ubuntu1804MatomoHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -742,7 +742,7 @@ Resources:
         Name: Ubuntu 1804 MatomoHost Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu1804
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
 
   Ubuntu1804Drupal8HostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -761,7 +761,7 @@ Resources:
         Name: Ubuntu 1804 Drupal8Host Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu1804
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
 
   Ubuntu1804AnsibleHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -780,7 +780,7 @@ Resources:
         Name: Ubuntu 1804 AnsibleHost Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu1804
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
 
   Ubuntu2004Drupal7HostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -799,7 +799,7 @@ Resources:
         Name: Ubuntu 2004 Drupal7Host Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
 
   Ubuntu2004Drupal8HostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
@@ -818,7 +818,7 @@ Resources:
         Name: Ubuntu 2004 Drupal8Host Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
-        'lib:dockerhost': false
+        'lib:dockerhost': 'false'
 
 Outputs:
   CompUbuntuBaseUpdateArn:
