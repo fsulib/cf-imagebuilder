@@ -249,7 +249,7 @@ Resources:
   UbuntuInstallDrupalDependenciesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Formalized version from a CF template.'
+      ChangeDescription: 'Remove libauthcas from installation step.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal-dependencies.yaml
       Description: Installs Drupal 8's dependencies.
       Name: Install Drupal8 Dependencies
@@ -260,7 +260,7 @@ Resources:
         'Name': 'Ubuntu Drupal Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.3
+      Version: 1.0.4
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
@@ -388,7 +388,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.5
+      Version: 1.0.6
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
