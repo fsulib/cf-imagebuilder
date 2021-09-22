@@ -55,6 +55,13 @@ Parameters:
     Type: String
     Default: components
 
+  # Distribution Configuration
+
+  AccountIdList:
+    Description: Parameter value containing list of accounts that will receive the images.
+    Type: AWS::SSM::Parameter::Value<CommaDelimitedList>
+    Default: /org/accounts/id_list
+
 Resources:
 
   # TODO: Rebuild the Dev stack so we get automatic public IPv4
@@ -543,6 +550,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 2004 Standard
             Name: Standard-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: Standard Ubuntu 2004 Image Distribution
       Tags:
