@@ -58,8 +58,8 @@ Parameters:
   # Distribution Configuration
 
   AccountIdList:
-    Description: Parameter value containing list of accounts that will receive the images.
-    Type: AWS::SSM::Parameter::Value<CommaDelimitedList>
+    Description: Parameter  containing list of accounts that will receive the images.
+    Type: AWS::SSM::Parameter::Value<List<String>>
     Default: /org/accounts/id_list
 
 Resources:
