@@ -427,6 +427,22 @@ Resources:
         "lib:dockerhost": false
       Version: 1.0.6
 
+  Ubuntu2004Drupal8HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupalDependenciesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
+      Name: Drupal8 Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": false
+      Version: 1.0.1
+      
   # Infrastructure Configuration 
 
   SimpleInfrastructureConfiguration:
@@ -608,6 +624,25 @@ Resources:
         "Name": Drupal7Host Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
+  Drupal8HostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 Drupal8Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal8Host-Ubuntu-2004
+              'lib:env': any
+              'lib:app': stats
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 Drupal8Host
+            Name: Drupal8Host-Ubuntu-2004_{{imagebuilder:buildDate}}
+          Region: !Ref AWS::Region
+      Name: Drupal8Host Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": Drupal8Host Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
   # Pipeline Configurations
 
   # TODO Automated build scheduling based on dependency updates
@@ -765,6 +800,24 @@ Resources:
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': false
 
+  Ubuntu2004Drupal8HostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Drupal8Host 2004 image.
+      DistributionConfigurationArn: !Ref Drupal8HostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004Drupal8HostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Drupal8Host Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 Drupal8Host Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': false
 
 Outputs:
   CompUbuntuBaseUpdateArn:
