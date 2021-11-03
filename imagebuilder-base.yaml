@@ -493,6 +493,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 1804 DockerHost
             Name: DockerHost-Ubuntu-1804_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: DockerHost Ubuntu 1804 Image Distribution
       Tags:
@@ -512,6 +514,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 2004 DockerHost
             Name: DockerHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: DockerHost Ubuntu 2004 Image Distribution
       Tags:
@@ -531,6 +535,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 1804 Standard
             Name: Standard-Ubuntu-1804_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: Standard Ubuntu 1804 Image Distribution
       Tags:
@@ -571,6 +577,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 1804 MatomoHost
             Name: MatomoHost-Ubuntu-1804_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: MatomoHost Ubuntu 1804 Image Distribution
       Tags:
@@ -590,6 +598,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 1804 Drupal8Host
             Name: Drupal8Host-Ubuntu-1804_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: Drupal8Host Ubuntu 1804 Image Distribution
       Tags:
@@ -609,6 +619,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 1804 AnsibleHost
             Name: AnsibleHost-Ubuntu-1804_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: AnsibleHost Ubuntu 1804 Image Distribution
       Tags:
@@ -628,6 +640,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 2004 Drupal7Host
             Name: Drupal7Host-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: Drupal7Host Ubuntu 2004 Image Distribution
       Tags:
@@ -647,6 +661,8 @@ Resources:
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 2004 Drupal8Host
             Name: Drupal8Host-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
       Name: Drupal8Host Ubuntu 2004 Image Distribution
       Tags:
