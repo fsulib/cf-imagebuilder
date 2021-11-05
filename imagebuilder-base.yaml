@@ -99,7 +99,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - s3:GetObject
-                Resource: arn:aws:s3:::${ComponentBucket}/*
+                Resource: !Sub arn:aws:s3:::${ComponentBucket}/*
         - PolicyName: LogBucketPolicy
           PolicyDocument:
             Version: 2012-10-17
@@ -216,7 +216,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.4
+      Version: 1.0.0
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -233,7 +233,7 @@ Resources:
         'Name': 'Ubuntu Docker Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.0
 
   UbuntuInstallMatomoComponent:
     Type: AWS::ImageBuilder::Component
@@ -249,24 +249,7 @@ Resources:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.2
-
-  UbuntuInstallDrupalDependenciesComponent:
-    Type: AWS::ImageBuilder::Component
-    Properties:
-      ChangeDescription: 'Remove libauthcas from installation step.'
-      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal-dependencies.yaml
-      Description: Installs Drupal 8's dependencies.
-      Name: Install Drupal8 Dependencies
-      Platform: Linux
-      SupportedOsVersions:
-        - Ubuntu 20
-        - Ubuntu 18
-      Tags:
-        'Name': 'Ubuntu Drupal Dependencies Installation Component'
-        'lib:distribution': 'Ubuntu'
-        'lib:created-by': !Ref Creator
-      Version: 1.0.5
+      Version: 1.0.0
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
@@ -282,7 +265,7 @@ Resources:
         'Name': 'Ubuntu Installation Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.0
 
   UbuntuInstallDrupal7DependenciesComponent:
     Type: AWS::ImageBuilder::Component
@@ -298,7 +281,40 @@ Resources:
         'Name': 'Ubuntu Drupal Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.6
+      Version: 1.0.0
+
+  UbuntuInstallDrupal8DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Remove libauthcas from installation step.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal8-dependencies.yaml
+      Description: Installs Drupal 8's dependencies.
+      Name: Install Drupal8 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+        - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Drupal8 Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallDrupal9DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Forgot to set HOME before calling composter global.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal9-dependencies.yaml
+      Description: Installs Drupal 9's dependencies.
+      Name: Install Drupal9 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Drupal 9 Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
 
   # Recipes
   
@@ -316,7 +332,7 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
         'lib:dockerhost': true
-      Version: 1.0.5
+      Version: 1.0.0
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -332,7 +348,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": true
-      Version: 1.0.5
+      Version: 1.0.0
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -347,7 +363,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.5
+      Version: 1.0.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -362,7 +378,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": false
-      Version: 1.0.5
+      Version: 1.0.0
 
   Ubuntu1804MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -378,7 +394,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.5
+      Version: 1.0.0
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -386,7 +402,7 @@ Resources:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupalDependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
       Name: Drupal8 Host Image for Ubuntu 18_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-18-lts-x86/x.x.x
@@ -394,7 +410,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.7
+      Version: 1.0.0
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -410,7 +426,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": false
-      Version: 1.0.1
+      Version: 1.0.0
 
   Ubuntu2004Drupal7HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -426,7 +442,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": false
-      Version: 1.0.6
+      Version: 1.0.0
 
   Ubuntu2004Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -434,9 +450,25 @@ Resources:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupalDependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
       Name: Drupal8 Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": false
+      Version: 1.0.0
+
+  Ubuntu2004Drupal9HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
+      Name: Drupal9 Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
@@ -644,6 +676,25 @@ Resources:
         "Name": Drupal8Host Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
+  Drupal9HostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 Drupal9Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal9Host-Ubuntu-2004
+              'lib:env': any
+              'lib:app': stats
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 Drupal9Host
+            Name: Drupal9Host-Ubuntu-2004_{{imagebuilder:buildDate}}
+          Region: !Ref AWS::Region
+      Name: Drupal9Host Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": Drupal9Host Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
   # Pipeline Configurations
 
   # TODO Automated build scheduling based on dependency updates
@@ -816,6 +867,25 @@ Resources:
       Status: ENABLED
       Tags:
         Name: Ubuntu 2004 Drupal8Host Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': false
+
+  Ubuntu2004Drupal9HostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Drupal9Host 2004 image.
+      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004Drupal9HostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Drupal9Host Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 Drupal9Host Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': false
