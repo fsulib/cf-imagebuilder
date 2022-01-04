@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 
-Descriptions: >
+Description: >
   This template builds components, recipes, pipelines, and distributions
   for the libraries' backing EC2 images.
 
