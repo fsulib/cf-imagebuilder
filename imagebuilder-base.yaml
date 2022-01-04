@@ -1,3 +1,9 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Descriptions: >
+  This template builds components, recipes, pipelines, and distributions
+  for the libraries' backing EC2 images.
+
 Parameters:
 
   # General
@@ -6,15 +12,21 @@ Parameters:
     Description: AWS username.
     Type: String
 
+  BuildSupervisorEmail:
+    Description: Email address of person responsible for image builds.
+    Type: String
+
   # Networking
 
   SubnetId:
     Description: Must auto-assign IPv4 addresses. This is a temporary hack.
     Type: AWS::EC2::Subnet::Id
+    Default: subnet-0423b86b48bc168ac
 
   VpcId:
     Description: The VPC id for image building.
     Type: AWS::EC2::VPC::Id
+    Default: vpc-04cb88c2aca4c3bf0
 
   # Infrastructure Configuration
   
@@ -40,6 +52,7 @@ Parameters:
   LoggingBucket:
     Description: Logs go here.
     Type: String
+    Default: logs.shared-services.lib.fsu.edu
 
   LoggingPrefix:
     Description: Object name prefix.
@@ -49,6 +62,7 @@ Parameters:
   ComponentBucket:
     Description: Components are here.
     Type: String
+    Default: imagebuilder.shared-services.lib.fsu.edu
 
   ComponentPrefix:
     Description: Object name prefix.
@@ -63,9 +77,6 @@ Parameters:
     Default: /org/accounts/id_list
 
 Resources:
-
-  # TODO: Rebuild the Dev stack so we get automatic public IPv4
-  # NOTE: Can't until Isle-Dev is out of the way.
 
   # IAM
   
@@ -141,12 +152,12 @@ Resources:
       GroupName: ImageBuilderInstanceSg
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
-          Description: Open to World
+          Description: World Egress
           IpProtocol: '-1'
       VpcId: !Ref VpcId
       Tags:
         - Key: Name
-          Value: ImageBuilder SG
+          Value: imagebuilder-security-group
         - Key: lib:created-by
           Value: !Ref Creator
         - Key: lib:env
@@ -161,15 +172,13 @@ Resources:
       Tags:
         - Key: Name
           Value: ImageBuilderSnsTopic
-        - Key: Creator
+        - Key: lib:created-by
           Value: !Ref Creator
 
-  # NOTE Temporary
-  
   ImageBuilderSnsTopicSubscription:
     Type: AWS::SNS::Subscription
     Properties:
-      Endpoint: mshackelford@fsu.edu
+      Endpoint: !Ref BuildSupervisorEmail
       Protocol: email
       TopicArn: !Ref ImageBuilderSnsTopic
 
@@ -258,23 +267,6 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.0
 
-  UbuntuInstallDrupalDependenciesComponent:
-    Type: AWS::ImageBuilder::Component
-    Properties:
-      ChangeDescription: 'Remove libauthcas from installation step.'
-      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal-dependencies.yaml
-      Description: Installs Drupal 8's dependencies.
-      Name: Install Drupal8 Dependencies
-      Platform: Linux
-      SupportedOsVersions:
-        - Ubuntu 20
-        - Ubuntu 18
-      Tags:
-        'Name': 'Ubuntu Drupal Dependencies Installation Component'
-        'lib:distribution': 'Ubuntu'
-        'lib:created-by': !Ref Creator
-      Version: 1.0.0
-
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
@@ -303,6 +295,39 @@ Resources:
         - Ubuntu 20
       Tags:
         'Name': 'Ubuntu Drupal Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallDrupal8DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Remove libauthcas from installation step.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal8-dependencies.yaml
+      Description: Installs Drupal 8's dependencies.
+      Name: Install Drupal8 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+        - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Drupal8 Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallDrupal9DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Forgot to set HOME before calling composter global.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal9-dependencies.yaml
+      Description: Installs Drupal 9's dependencies.
+      Name: Install Drupal9 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Drupal 9 Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
       Version: 1.0.0
@@ -449,6 +474,22 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
+      Version: 1.0.0
+      
+  Ubuntu2004Drupal9HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
+      Name: Drupal9 Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": false
       Version: 1.0.0
       
   # Infrastructure Configuration 
@@ -669,6 +710,27 @@ Resources:
         "Name": Drupal8Host Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
+  Drupal9HostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 Drupal9Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal9Host-Ubuntu-2004
+              'lib:env': any
+              'lib:app': stats
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 Drupal9Host
+            Name: Drupal9Host-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              UserIds: !Ref AccountIdList
+          Region: !Ref AWS::Region
+      Name: Drupal9Host Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": Drupal9Host Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
   # Pipeline Configurations
 
   # TODO Automated build scheduling based on dependency updates
@@ -844,6 +906,25 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
+
+  Ubuntu2004Drupal9HostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Drupal9Host 2004 image.
+      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004Drupal9HostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Drupal9Host Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 Drupal9Host Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': false
 
 Outputs:
   CompUbuntuBaseUpdateArn:
