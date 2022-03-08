@@ -265,7 +265,7 @@ Resources:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.0.1
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
