@@ -816,9 +816,9 @@ Resources:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
       Description: Builds and distributes a MatomoHost 2004 image.
-      DistributionConfigurationArn: !Ref MatomoHostUbuntu1804Distribution
+      DistributionConfigurationArn: !Ref MatomoHostUbuntu2004Distribution
       EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu1804MatomoHostImageRecipe
+      ImageRecipeArn: !Ref Ubuntu2004MatomoHostImageRecipe
       ImageTestsConfiguration:
         ImageTestsEnabled: true
         TimeoutMinutes: !Ref ImageTestsTimeout
