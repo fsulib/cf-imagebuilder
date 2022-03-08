@@ -260,7 +260,7 @@ Resources:
       Name: Install Matomo
       Platform: Linux
       SupportedOsVersions:
-        - Ubuntu 18
+        - Ubuntu 20
       Tags:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
@@ -396,19 +396,19 @@ Resources:
         "lib:dockerhost": 'false'
       Version: 1.0.0
 
-  Ubuntu1804MatomoHostImageRecipe:
+  Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallMatomoComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Matomo 3.14.1
-      Name: Matomo Host Image for Ubuntu 18_04
-      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-18-lts-x86/x.x.x
+      Description: Patches OS, installs standard AWS tools, installs Matomo 4.4.1
+      Name: Matomo Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 18.04
+        "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
       Version: 1.0.0
 
@@ -418,7 +418,7 @@ Resources:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupalDependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
       Name: Drupal8 Host Image for Ubuntu 18_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-18-lts-x86/x.x.x
@@ -466,7 +466,7 @@ Resources:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupalDependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
       Name: Drupal8 Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
@@ -605,25 +605,25 @@ Resources:
         "Name": Standard Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
-  MatomoHostUbuntu1804Distribution:
+  MatomoHostUbuntu2004Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
-      Description: Ubuntu 1804 MatomoHost Distribution
+      Description: Ubuntu 2004 MatomoHost Distribution
       Distributions:
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: MatomoHost-Ubuntu-1804
+              Name: MatomoHost-Ubuntu-2004
               'lib:env': any
               'lib:app': stats
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 1804 MatomoHost
-            Name: MatomoHost-Ubuntu-1804_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2004 MatomoHost
+            Name: MatomoHost-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               UserIds: !Ref AccountIdList
           Region: !Ref AWS::Region
-      Name: MatomoHost Ubuntu 1804 Image Distribution
+      Name: MatomoHost Ubuntu 2004 Image Distribution
       Tags:
-        "Name": MatomoHost Ubuntu 1804 Image Distribution
+        "Name": MatomoHost Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
   Drupal8HostUbuntu1804Distribution:
@@ -812,10 +812,10 @@ Resources:
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
 
-  Ubuntu1804MatomoHostPipeline:
+  Ubuntu2004MatomoHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a MatomoHost 1804 image.
+      Description: Builds and distributes a MatomoHost 2004 image.
       DistributionConfigurationArn: !Ref MatomoHostUbuntu1804Distribution
       EnhancedImageMetadataEnabled: true
       ImageRecipeArn: !Ref Ubuntu1804MatomoHostImageRecipe
@@ -823,12 +823,12 @@ Resources:
         ImageTestsEnabled: true
         TimeoutMinutes: !Ref ImageTestsTimeout
       InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: MatomoHost Pipeline for Ubuntu 1804
+      Name: MatomoHost Pipeline for Ubuntu 2004
       Status: ENABLED
       Tags:
-        Name: Ubuntu 1804 MatomoHost Pipeline
+        Name: Ubuntu 2004 MatomoHost Pipeline
         'lib:created-by': !Ref Creator
-        'lib:distribution': Ubuntu1804
+        'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
 
   Ubuntu1804Drupal8HostPipeline:
