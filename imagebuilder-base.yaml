@@ -410,7 +410,7 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+      Version: 1.0.1
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
