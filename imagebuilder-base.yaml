@@ -71,6 +71,11 @@ Parameters:
 
   # Distribution Configuration
 
+  OrganizationArn:
+    Description: The ARN of our organization.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /org/arn
+
   AccountIdList:
     Description: Parameter  containing list of accounts that will receive the images.
     Type: AWS::SSM::Parameter::Value<List<String>>
@@ -265,7 +270,7 @@ Resources:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.4
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
@@ -332,6 +337,22 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.0
 
+  UbuntuInstallSignalSciencesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation of component.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-signal-sciences.yaml
+      Description: Installs Signal Sciences repo, agent, and Apache module.
+      Name: Install Signal Sciences
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Signal Sciences Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
   # Recipes
   
   Ubuntu1804DockerHostImageRecipe:
@@ -357,14 +378,16 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Docker-CE.
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs Signal Sciences.
       Name: Docker Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
-      Version: 1.0.0
+        "lib:signalsciences": 'true'
+      Version: 1.0.1
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -379,7 +402,8 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+        "lib:signalsciences": 'false'
+      Version: 1.0.1
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -387,14 +411,16 @@ Resources:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-      Description: Patches OS, installs standard AWS tools.
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Signal Sciences.
       Name: Standard Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+        "lib:signalsciences": 'true'
+      Version: 1.0.1
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -403,14 +429,16 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallMatomoComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Matomo 4.4.1
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Matomo 4.4.1, installs Signal Sciences.
       Name: Matomo Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
-      Version: 1.0.1
+        "lib:signalsciences": 'true'
+      Version: 1.0.4
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -426,7 +454,8 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+        "lib:signalsciences": 'false'
+      Version: 1.0.1
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -442,7 +471,8 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+        "lib:signalsciences": 'false'
+      Version: 1.0.1
 
   Ubuntu2004Drupal7HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -451,14 +481,16 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal7DependenciesComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Drupal7 package dependencies.
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal7 package dependencies, installs Signal Sciences.
       Name: Drupal7 Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+        "lib:signalsciences": 'true'
+      Version: 1.0.1
 
   Ubuntu2004Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -467,14 +499,16 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies, installs Signal Sciences.
       Name: Drupal8 Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
-      Version: 1.0.0
+        "lib:signalsciences": 'true'
+      Version: 1.0.1
       
   Ubuntu2004Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -483,14 +517,16 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies, installs Signal Sciences.
       Name: Drupal9 Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 20.04
-        "lib:dockerhost": false
-      Version: 1.0.0
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 1.0.1
       
   # Infrastructure Configuration 
 
@@ -535,7 +571,8 @@ Resources:
             Description: Ubuntu 1804 DockerHost
             Name: DockerHost-Ubuntu-1804_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: DockerHost Ubuntu 1804 Image Distribution
       Tags:
@@ -556,7 +593,8 @@ Resources:
             Description: Ubuntu 2004 DockerHost
             Name: DockerHost-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: DockerHost Ubuntu 2004 Image Distribution
       Tags:
@@ -598,7 +636,8 @@ Resources:
             Description: Ubuntu 2004 Standard
             Name: Standard-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: Standard Ubuntu 2004 Image Distribution
       Tags:
@@ -619,7 +658,8 @@ Resources:
             Description: Ubuntu 2004 MatomoHost
             Name: MatomoHost-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: MatomoHost Ubuntu 2004 Image Distribution
       Tags:
@@ -640,7 +680,8 @@ Resources:
             Description: Ubuntu 1804 Drupal8Host
             Name: Drupal8Host-Ubuntu-1804_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: Drupal8Host Ubuntu 1804 Image Distribution
       Tags:
@@ -661,7 +702,8 @@ Resources:
             Description: Ubuntu 1804 AnsibleHost
             Name: AnsibleHost-Ubuntu-1804_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: AnsibleHost Ubuntu 1804 Image Distribution
       Tags:
@@ -682,7 +724,8 @@ Resources:
             Description: Ubuntu 2004 Drupal7Host
             Name: Drupal7Host-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: Drupal7Host Ubuntu 2004 Image Distribution
       Tags:
@@ -703,7 +746,8 @@ Resources:
             Description: Ubuntu 2004 Drupal8Host
             Name: Drupal8Host-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: Drupal8Host Ubuntu 2004 Image Distribution
       Tags:
@@ -724,7 +768,8 @@ Resources:
             Description: Ubuntu 2004 Drupal9Host
             Name: Drupal9Host-Ubuntu-2004_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
-              UserIds: !Ref AccountIdList
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: Drupal9Host Ubuntu 2004 Image Distribution
       Tags:
