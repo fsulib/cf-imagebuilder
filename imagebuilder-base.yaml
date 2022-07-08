@@ -242,8 +242,8 @@ Resources:
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Formalized version from a CF template.'
-      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-docker-installation.yaml
+      ChangeDescription: 'New parameterized version, does not use key-add, installs docker-compose-plugin.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-docker-installation-2.0.yaml
       Description: Installs the Docker GPG key, repo, application, and dependencies.
       Name: Install Docker
       Platform: Linux
@@ -254,7 +254,7 @@ Resources:
         'Name': 'Ubuntu Docker Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 2.0.2
 
   UbuntuInstallMatomoComponent:
     Type: AWS::ImageBuilder::Component
@@ -351,7 +351,24 @@ Resources:
         'Name': 'Ubuntu Signal Sciences Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
+      Version: 1.0.1
+
+  UbuntuInstallECSAgentComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation of component.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-ecs-agent-installation.yaml
+      Description: Installs the Amazon ECS agent.
+      Name: Install Amazon ECS Agent
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu ECS Agent Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
       Version: 1.0.0
+
 
   # Recipes
   
@@ -369,7 +386,7 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
         'lib:dockerhost': 'true'
-      Version: 1.0.0
+      Version: 1.0.3
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -387,7 +404,25 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 1.0.1
+      Version: 2.0.2
+
+  Ubuntu2004ECSHostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallECSAgentComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs the ECS Agent.
+      Name: ECS Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": 'true'
+        "lib:signalsciences": 'false'
+      Version: 1.0.0
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -403,7 +438,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.1
+      Version: 1.0.2
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -420,7 +455,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.1
+      Version: 1.0.3
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -438,7 +473,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.4
+      Version: 1.0.6
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -455,7 +490,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.1
+      Version: 1.0.2
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -472,7 +507,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.1
+      Version: 1.0.2
 
   Ubuntu2004Drupal7HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -490,7 +525,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.1
+      Version: 1.0.3
 
   Ubuntu2004Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -508,7 +543,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.1
+      Version: 1.0.3
       
   Ubuntu2004Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -526,7 +561,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.1
+      Version: 1.0.3
       
   # Infrastructure Configuration 
 
@@ -599,6 +634,28 @@ Resources:
       Name: DockerHost Ubuntu 2004 Image Distribution
       Tags:
         "Name": DockerHost Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  ECSHostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 ECSHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: ECSHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 ECSHost
+            Name: ECSHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: ECSHost Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": ECSHost Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
   StandardUbuntu1804Distribution:
@@ -803,7 +860,7 @@ Resources:
   Ubuntu2004DockerHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a DockerHost 1804 image
+      Description: Builds and distributes a DockerHost 2004 image
       DistributionConfigurationArn: !Ref DockerHostUbuntu2004Distribution
       EnhancedImageMetadataEnabled: true
       ImageRecipeArn: !Ref Ubuntu2004DockerHostImageRecipe
@@ -816,13 +873,32 @@ Resources:
       Tags:
         Name: Ubuntu 2004 DockerHost Pipeline
         'lib:created-by': mshackelford
-        'lib:distribution': Ubuntu1804
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'true'
+    
+  Ubuntu2004ECSHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a ECS Host 2004 image
+      DistributionConfigurationArn: !Ref ECSHostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004ECSHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: ECSHost Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 ECSHost Pipeline
+        'lib:created-by': mshackelford
+        'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'true'
     
   Ubuntu1804StandardPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a DockerHost 1804 image
+      Description: Builds and distributes a Standard 1804 image
       DistributionConfigurationArn: !Ref StandardUbuntu1804Distribution
       EnhancedImageMetadataEnabled: true
       ImageRecipeArn: !Ref Ubuntu1804StandardImageRecipe
@@ -841,7 +917,7 @@ Resources:
   Ubuntu2004StandardPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a DockerHost 2004 image
+      Description: Builds and distributes a Standard 2004 image
       DistributionConfigurationArn: !Ref StandardUbuntu2004Distribution
       EnhancedImageMetadataEnabled: true
       ImageRecipeArn: !Ref Ubuntu2004StandardImageRecipe
