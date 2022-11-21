@@ -33,12 +33,12 @@ Parameters:
   InstanceTypeOne:
     Description: EC2 type performing the build.
     Type: String
-    Default: t3.small
+    Default: m5.xlarge
 
   InstanceTypeTwo:
     Description: EC2 type performing the build.
     Type: String
-    Default: t3.medium
+    Default: m5.2xlarge
 
   # Pipeline Configuration
 
@@ -77,9 +77,16 @@ Parameters:
     Default: /org/arn
 
   AccountIdList:
-    Description: Parameter  containing list of accounts that will receive the images.
+    Description: Parameter containing list of accounts that will receive the images.
     Type: AWS::SSM::Parameter::Value<List<String>>
     Default: /org/accounts/id_list
+
+  # Ubuntu 22.10 Base
+
+  Ubuntu2210BaseAmiId:
+    Description: AMI id for the base Ubuntu 22.10 image required for Drupal 9.
+    Type: AWS::EC2::Image::Id
+    Default: ami-0f7486c79888ce064
 
 Resources:
 
@@ -225,7 +232,7 @@ Resources:
   UbuntuInstallAwsToolsComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Formalized version from a CF template.'
+      ChangeDescription: 'Parameterized; use pip to install cfn helper scripts.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
       Name: Install AWS Tools and Dependencies
@@ -237,7 +244,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 2.0.0
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -254,7 +261,7 @@ Resources:
         'Name': 'Ubuntu Docker Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 2.0.2
+      Version: 2.0.0
 
   UbuntuInstallMatomoComponent:
     Type: AWS::ImageBuilder::Component
@@ -270,7 +277,7 @@ Resources:
         'Name': 'Ubuntu Matommo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.4
+      Version: 1.0.0
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
@@ -386,7 +393,7 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
         'lib:dockerhost': 'true'
-      Version: 1.0.3
+      Version: 2.0.0
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -404,7 +411,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 2.0.2
+      Version: 3.0.0
 
   Ubuntu2004ECSHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -422,7 +429,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'false'
-      Version: 1.0.0
+      Version: 2.0.0
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -438,7 +445,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.2
+      Version: 2.0.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -455,7 +462,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.3
+      Version: 2.0.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -473,7 +480,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.6
+      Version: 2.0.0
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -490,7 +497,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.2
+      Version: 2.0.0
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -507,7 +514,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.2
+      Version: 2.0.0
 
   Ubuntu2004Drupal7HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -525,7 +532,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.3
+      Version: 2.0.0
 
   Ubuntu2004Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -543,7 +550,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.3
+      Version: 2.0.0
       
   Ubuntu2004Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -561,8 +568,28 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.3
+      Version: 2.0.0
       
+  Ubuntu2210Drupal9HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
+      Name: Drupal9 Host Image for Ubuntu 22_10
+      ParentImage: !Ref Ubuntu2210BaseAmiId
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 22.10
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'false'
+      Version: 1.0.0
+      AdditionalInstanceConfiguration:
+        SystemsManagerAgent:
+          UninstallAfterBuild: false
+
   # Infrastructure Configuration 
 
   SimpleInfrastructureConfiguration:
@@ -820,7 +847,7 @@ Resources:
             AmiTags:
               Name: Drupal9Host-Ubuntu-2004
               'lib:env': any
-              'lib:app': stats
+              'lib:app': drupal9
               'lib:build-version': build-{{imagebuilder:buildVersion}}
             Description: Ubuntu 2004 Drupal9Host
             Name: Drupal9Host-Ubuntu-2004_{{imagebuilder:buildDate}}
@@ -831,6 +858,28 @@ Resources:
       Name: Drupal9Host Ubuntu 2004 Image Distribution
       Tags:
         "Name": Drupal9Host Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  Drupal9HostUbuntu2210Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2210 Drupal9Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal9Host-Ubuntu-2210
+              'lib:env': any
+              'lib:app': drupal9
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2210 Drupal9Host
+            Name: Drupal9Host-Ubuntu-2210_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: Drupal9Host Ubuntu 2210 Image Distribution
+      Tags:
+        "Name": Drupal9Host Ubuntu 2210 Image Distribution
         "lib:created-by": !Ref Creator
 
   # Pipeline Configurations
@@ -1045,6 +1094,25 @@ Resources:
         Name: Ubuntu 2004 Drupal9Host Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
+        'lib:dockerhost': false
+
+  Ubuntu2210Drupal9HostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Drupal9Host 2210 image.
+      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2210Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2210Drupal9HostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Drupal9Host Pipeline for Ubuntu 2210
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2210 Drupal9Host Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2210
         'lib:dockerhost': false
 
 Outputs:
