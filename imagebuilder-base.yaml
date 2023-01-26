@@ -347,7 +347,7 @@ Resources:
   UbuntuInstallSignalSciencesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Initial creation of component.'
+      ChangeDescription: 'Use default keyring location for jammy; create if nonexistent.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-signal-sciences.yaml
       Description: Installs Signal Sciences repo, agent, and Apache module.
       Name: Install Signal Sciences
@@ -358,7 +358,7 @@ Resources:
         'Name': 'Ubuntu Signal Sciences Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.2
 
   UbuntuInstallECSAgentComponent:
     Type: AWS::ImageBuilder::Component
@@ -411,7 +411,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 3.0.2
+      Version: 3.0.3
 
   Ubuntu2004ECSHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -462,7 +462,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.2
+      Version: 2.0.3
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -480,7 +480,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.2
+      Version: 2.0.3
 
   Ubuntu1804Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -532,7 +532,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.2
+      Version: 2.0.3
 
   Ubuntu2004Drupal8HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -550,7 +550,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.2
+      Version: 2.0.3
       
   Ubuntu2004Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -568,7 +568,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.3
+      Version: 2.0.4
       
   Ubuntu2210Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -577,6 +577,11 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - jammy
       Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
       Name: Drupal9 Host Image for Ubuntu 22_10
       ParentImage: !Ref Ubuntu2210BaseAmiId
@@ -585,7 +590,7 @@ Resources:
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.3
+      Version: 1.0.4
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
