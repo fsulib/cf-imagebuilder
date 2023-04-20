@@ -86,7 +86,7 @@ Parameters:
   Ubuntu2210BaseAmiId:
     Description: AMI id for the base Ubuntu 22.10 image required for Drupal 9.
     Type: AWS::EC2::Image::Id
-    Default: ami-0f7486c79888ce064
+    Default: ami-0638741e0c9aabde6
 
 Resources:
 
@@ -590,7 +590,7 @@ Resources:
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.0.5
+      Version: 1.1.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
