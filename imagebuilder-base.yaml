@@ -662,6 +662,18 @@ Resources:
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
+          Region: us-east-2
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: DockerHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 DockerHost
+            Name: DockerHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
           Region: !Ref AWS::Region
       Name: DockerHost Ubuntu 2004 Image Distribution
       Tags:
