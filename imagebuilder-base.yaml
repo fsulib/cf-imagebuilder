@@ -311,23 +311,6 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.0
 
-  UbuntuInstallDrupal8DependenciesComponent:
-    Type: AWS::ImageBuilder::Component
-    Properties:
-      ChangeDescription: 'Remove libauthcas from installation step.'
-      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal8-dependencies.yaml
-      Description: Installs Drupal 8's dependencies.
-      Name: Install Drupal8 Dependencies
-      Platform: Linux
-      SupportedOsVersions:
-        - Ubuntu 20
-        - Ubuntu 18
-      Tags:
-        'Name': 'Ubuntu Drupal8 Dependencies Installation Component'
-        'lib:distribution': 'Ubuntu'
-        'lib:created-by': !Ref Creator
-      Version: 1.0.0
-
   UbuntuInstallDrupal9DependenciesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
@@ -481,23 +464,6 @@ Resources:
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
       Version: 2.2.1
-
-  Ubuntu1804Drupal8HostImageRecipe:
-    Type: AWS::ImageBuilder::ImageRecipe
-    Properties:
-      Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies.
-      Name: Drupal8 Host Image for Ubuntu 18_04
-      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-18-lts-x86/x.x.x
-      Tags:
-        "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 18.04
-        "lib:dockerhost": 'false'
-        "lib:signalsciences": 'false'
-      Version: 2.0.2
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -526,24 +492,6 @@ Resources:
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Drupal7 package dependencies, installs Signal Sciences.
       Name: Drupal7 Host Image for Ubuntu 20_04
-      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
-      Tags:
-        "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 20.04
-        "lib:dockerhost": 'false'
-        "lib:signalsciences": 'true'
-      Version: 2.0.4
-
-  Ubuntu2004Drupal8HostImageRecipe:
-    Type: AWS::ImageBuilder::ImageRecipe
-    Properties:
-      Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupal8DependenciesComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Drupal8 package dependencies, installs Signal Sciences.
-      Name: Drupal8 Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
@@ -767,28 +715,6 @@ Resources:
         "Name": MatomoHost Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
-  Drupal8HostUbuntu1804Distribution:
-    Type: AWS::ImageBuilder::DistributionConfiguration
-    Properties:
-      Description: Ubuntu 1804 Drupal8Host Distribution
-      Distributions:
-        - AmiDistributionConfiguration:
-            AmiTags:
-              Name: Drupal8Host-Ubuntu-1804
-              'lib:env': any
-              'lib:app': stats
-              'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 1804 Drupal8Host
-            Name: Drupal8Host-Ubuntu-1804_{{imagebuilder:buildDate}}
-            LaunchPermissionConfiguration:
-              OrganizationArns:
-                - !Ref OrganizationArn
-          Region: !Ref AWS::Region
-      Name: Drupal8Host Ubuntu 1804 Image Distribution
-      Tags:
-        "Name": Drupal8Host Ubuntu 1804 Image Distribution
-        "lib:created-by": !Ref Creator
-
   AnsibleHostUbuntu1804Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
@@ -831,28 +757,6 @@ Resources:
       Name: Drupal7Host Ubuntu 2004 Image Distribution
       Tags:
         "Name": Drupal7Host Ubuntu 2004 Image Distribution
-        "lib:created-by": !Ref Creator
-
-  Drupal8HostUbuntu2004Distribution:
-    Type: AWS::ImageBuilder::DistributionConfiguration
-    Properties:
-      Description: Ubuntu 2004 Drupal8Host Distribution
-      Distributions:
-        - AmiDistributionConfiguration:
-            AmiTags:
-              Name: Drupal8Host-Ubuntu-2004
-              'lib:env': any
-              'lib:app': stats
-              'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2004 Drupal8Host
-            Name: Drupal8Host-Ubuntu-2004_{{imagebuilder:buildDate}}
-            LaunchPermissionConfiguration:
-              OrganizationArns:
-                - !Ref OrganizationArn
-          Region: !Ref AWS::Region
-      Name: Drupal8Host Ubuntu 2004 Image Distribution
-      Tags:
-        "Name": Drupal8Host Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
   Drupal9HostUbuntu2004Distribution:
@@ -1018,25 +922,6 @@ Resources:
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
 
-  Ubuntu1804Drupal8HostPipeline:
-    Type: AWS::ImageBuilder::ImagePipeline
-    Properties:
-      Description: Builds and distributes a Drupal8Host 1804 image.
-      DistributionConfigurationArn: !Ref Drupal8HostUbuntu1804Distribution
-      EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu1804Drupal8HostImageRecipe
-      ImageTestsConfiguration:
-        ImageTestsEnabled: true
-        TimeoutMinutes: !Ref ImageTestsTimeout
-      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: Drupal8Host Pipeline for Ubuntu 1804
-      Status: ENABLED
-      Tags:
-        Name: Ubuntu 1804 Drupal8Host Pipeline
-        'lib:created-by': !Ref Creator
-        'lib:distribution': Ubuntu1804
-        'lib:dockerhost': 'false'
-
   Ubuntu1804AnsibleHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
@@ -1071,25 +956,6 @@ Resources:
       Status: ENABLED
       Tags:
         Name: Ubuntu 2004 Drupal7Host Pipeline
-        'lib:created-by': !Ref Creator
-        'lib:distribution': Ubuntu2004
-        'lib:dockerhost': 'false'
-
-  Ubuntu2004Drupal8HostPipeline:
-    Type: AWS::ImageBuilder::ImagePipeline
-    Properties:
-      Description: Builds and distributes a Drupal8Host 2004 image.
-      DistributionConfigurationArn: !Ref Drupal8HostUbuntu2004Distribution
-      EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu2004Drupal8HostImageRecipe
-      ImageTestsConfiguration:
-        ImageTestsEnabled: true
-        TimeoutMinutes: !Ref ImageTestsTimeout
-      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: Drupal8Host Pipeline for Ubuntu 2004
-      Status: ENABLED
-      Tags:
-        Name: Ubuntu 2004 Drupal8Host Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
