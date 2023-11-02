@@ -1,0 +1,31 @@
+{
+    "Records": [
+        {
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+            "EventSource": "aws:sns",
+            "Sns": {
+                "SignatureVersion": "1",
+                "Timestamp": "2019-01-02T12:45:07.000Z",
+                "Signature": "tcc6faL2yUC6dgZdmrwh1Y4cGa/ebXEkAi6RibDsvpi+tE/1+82j...65r==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-ac565b8b1a6c5d002d285f9598aa1d9b.pem",
+                "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+                "Message": "{\"versionlessArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:image/my-example-image\", \"semver\": 1237940039285380274899124231, \"arn\": \"arn:aws:imagebuilder:us-west-2:123456789012:image/my-example-image/1.0.0/7\", \"name\": \"My Example Image\", \"version\": \"1.0.0\", \"type\": \"AMI\", \"buildVersion\": 7, \"state\": {\"status\": \"FAILED\", \"reason\": \"Image Failure reason.\"}, \"platform\": \"Linux\", \"imageRecipe\": {\"arn\": \"arn:aws:imagebuilder:us-west-2:123456789012:image-recipe/my-example-image/1.0.0\", \"name\": \"My Example Image\", \"version\": \"1.0.0\", \"description\": \"Testing Image recipe\", \"components\": [{\"componentArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:component/my-example-image-component/1.0.0/1\"}], \"platform\": \"Linux\", \"parentImage\": \"ami-0cd12345db678d90f\", \"dateCreated\": \"Jun 21, 2022 11:36:14 PM\", \"tags\": {\"internalId\": \"1a234567-8901-2345-bcd6-ef7890123456\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:image-recipe/my-example-image/1.0.0\"}, \"accountId\": \"123456789012\"}, \"sourcePipelineArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:image-pipeline/my-example-image-pipeline\", \"infrastructureConfiguration\": {\"arn\": \"arn:aws:imagebuilder:us-west-2:123456789012:infrastructure-configuration/my-example-infra-config\", \"name\": \"SNS topic Infra config\", \"description\": \"An example that will retain instances of failed builds\", \"instanceTypes\": [\"t2.micro\"], \"instanceProfileName\": \"EC2InstanceProfileForImageBuilder\", \"tags\": {\"internalId\": \"234abc56-d789-0123-a4e5-6b789d012c34\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:infrastructure-configuration/my-example-infra-config\"}, \"terminateInstanceOnFailure\": true, \"snsTopicArn\": \"arn:aws:sns:us-west-2:123456789012:example-pipeline-notification-topic\", \"dateCreated\": \"Jul 5, 2022 7:31:53 PM\", \"accountId\": \"123456789012\"}, \"imageTestsConfigurationDocument\": {\"imageTestsEnabled\": true, \"timeoutMinutes\": 720}, \"distributionConfiguration\": {\"arn\": \"arn:aws:imagebuilder:us-west-2:123456789012:distribution-configuration/my-example-distribution-config\", \"name\": \"New distribution config\", \"dateCreated\": \"Dec 3, 2021 9:24:22 PM\", \"distributions\": [{\"region\": \"us-west-2\", \"amiDistributionConfiguration\": {}, \"fastLaunchConfigurations\": [{\"enabled\": true, \"snapshotConfiguration\": {\"targetResourceCount\": 2}, \"maxParallelLaunches\": 2, \"launchTemplate\": {\"launchTemplateId\": \"lt-01234567890\"}, \"accountId\": \"123456789012\"}]}], \"tags\": {\"internalId\": \"1fecd23a-4f56-7f89-01e2-345678abbe90\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:distribution-configuration/my-example-distribution-config\"}, \"accountId\": \"123456789012\"}, \"dateCreated\": \"Jul 5, 2022 7:40:15 PM\", \"outputResources\": {\"amis\": []}, \"accountId\": \"123456789012\", \"enhancedImageMetadataEnabled\": true, \"buildType\": \"SCHEDULED\", \"tags\": {\"internalId\": \"456c78b9-0e12-3f45-afb6-7e89b0f1a23b\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-2:123456789012:image/my-example-image/1.0.0/7\"}}",
+               "MessageAttributes": {
+                    "Test": {
+                        "Type": "String",
+                        "Value": "TestString"
+                    },
+                    "TestBinary": {
+                        "Type": "Binary",
+                        "Value": "TestBinary"
+                    }
+                },
+                "Type": "Notification",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&amp;SubscriptionArn=arn:aws:sns:us-east-1:123456789012:test-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+                "TopicArn":"arn:aws:sns:us-east-1:123456789012:sns-lambda",
+                "Subject": "TestInvoke"
+            }
+        }
+    ]
+}
