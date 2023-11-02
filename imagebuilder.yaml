@@ -1,32 +1,54 @@
+Transform: AWS::Serverless-2016-10-31
+
 AWSTemplateFormatVersion: "2010-09-09"
 
-Description: >
-  This template builds components, recipes, pipelines, and distributions
-  for the libraries' backing EC2 images.
+Description: ImageBuilder resources.
 
 Parameters:
 
   # General
-  
-  Creator:
-    Description: AWS username.
+
+  App:
+    Description: lib:app value
     Type: String
+    Default: ImageBuilder
+
+  Env:
+    Description: networking environment
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  Creator:
+    Description: fsuid
+    Type: String
+
+  Commit:
+    Description: commit id
+    Type: String
+
+  # Notification Configuration
 
   BuildSupervisorEmail:
     Description: Email address of person responsible for image builds.
     Type: String
 
-  # Networking
+  ParameterPrefix:
+    Description: ssm parameter prefix
+    Type: String
+    Default: /images/ami
 
-  SubnetId:
-    Description: Must auto-assign IPv4 addresses. This is a temporary hack.
-    Type: AWS::EC2::Subnet::Id
-    Default: subnet-0423b86b48bc168ac
-
-  VpcId:
-    Description: The VPC id for image building.
-    Type: AWS::EC2::VPC::Id
-    Default: vpc-04cb88c2aca4c3bf0
+  LogLevel:
+    Description: parameter writer cloudwatch log level
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - info
+      - debug
 
   # Infrastructure Configuration
   
@@ -88,10 +110,121 @@ Parameters:
     Type: AWS::EC2::Image::Id
     Default: ami-0638741e0c9aabde6
 
+Mappings:
+
+  Environments:
+
+    dev:
+      SubnetId: subnet-03fc4450163fba56d
+
+    test:
+      SubnetId: subnet-0b77e105638fbc027
+
+    prod:
+      SubnetId: subnet-064e75118bd7b4c60
+
 Resources:
+  
+  # Notifications and Events
+
+  ImageBuilderSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ImageBuilderNotifications
+      Tags:
+        - Key: Name
+          Value: ImageBuilderSnsTopic
+        - Key: lib:created-by
+          Value: !Ref Creator
+
+  ImageBuilderSnsTopicSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref BuildSupervisorEmail
+      Protocol: email
+      TopicArn: !Ref ImageBuilderSnsTopic
+
+  ImageBuilderSnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - imagebuilder.amazonaws.com
+          Action:
+            - sns:Publish
+          Resource: !Ref ImageBuilderSnsTopic
+      Topics:
+        - !Ref ImageBuilderSnsTopic
+
+  # ParamWriter Lambda
+
+  ParamWriter:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt ParamWriterIamRole.Arn
+      Tags:
+        "Name": "ImageBuilder-ParameterWriter"
+        "lib:app": !Ref App
+        "lib:env": "any"
+        "lib:created-by": !Ref Creator
+        "lib:bill-to": DI
+        "lib:commit": !Ref Commit
+      CodeUri: lambda/
+      Handler: parameter_writer.handler
+      Environment:
+        Variables:
+          PARAMETER_PREFIX: !Ref ParameterPrefix
+          LOG_LEVEL: !Ref LogLevel
+      Timeout: 30
+      MemorySize: 128
+      Runtime: python3.11
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
+      Events:
+        WriteParamOnSns:
+          Type: SNS
+          Properties:
+            Topic: !Ref ImageBuilderSnsTopic
 
   # IAM
-  
+
+  ParamWriterIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /fsulib/
+      Policies:
+        - PolicyName: ParameterWriterPolicy
+          PolicyDocument: !Sub | 
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "ParameterWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:AddTagsToResource",
+                      "ssm:PutParameter"
+                  ],
+                  "Resource": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterPrefix}/*"
+                }
+              ]
+            }
+
   ImageBuilderIamRole:
     Type: AWS::IAM::Role
     Properties:
@@ -160,55 +293,20 @@ Resources:
   ImageBuilderSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: A security group for ImageBuilder instances.
+      GroupDescription: ImageBuilderSecurityGroup
       GroupName: ImageBuilderInstanceSg
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           Description: World Egress
           IpProtocol: '-1'
-      VpcId: !Ref VpcId
+      VpcId: !Sub '{{resolve:ssm:/vpc/${Env}/vpc_id}}'
       Tags:
         - Key: Name
-          Value: imagebuilder-security-group
+          Value: ImageBuilderSecurityGroup
         - Key: lib:created-by
           Value: !Ref Creator
         - Key: lib:env
           Value: dev
-
-  # SNS Topic
-
-  ImageBuilderSnsTopic:
-    Type: AWS::SNS::Topic
-    Properties:
-      TopicName: ImageBuilderTopic
-      Tags:
-        - Key: Name
-          Value: ImageBuilderSnsTopic
-        - Key: lib:created-by
-          Value: !Ref Creator
-
-  ImageBuilderSnsTopicSubscription:
-    Type: AWS::SNS::Subscription
-    Properties:
-      Endpoint: !Ref BuildSupervisorEmail
-      Protocol: email
-      TopicArn: !Ref ImageBuilderSnsTopic
-
-  ImageBuilderSnsTopicPolicy:
-    Type: AWS::SNS::TopicPolicy
-    Properties:
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          Effect: Allow
-          Principal:
-            Service:
-              - imagebuilder.amazonaws.com
-          Action:
-            - sns:Publish
-          Resource: !Ref ImageBuilderSnsTopic
-      Topics:
-        - !Ref ImageBuilderSnsTopic
 
   # Components
 
@@ -564,7 +662,11 @@ Resources:
       SecurityGroupIds:
         - !Ref ImageBuilderSecurityGroup
       SnsTopicArn: !Ref ImageBuilderSnsTopic
-      SubnetId: !Ref SubnetId
+      SubnetId:
+        Fn::FindInMap:
+          - Environments
+          - !Ref Env
+          - SubnetId
       Tags:
         "Name": "Simple ImageBuilder Infrastructure"
         "lib:created-by": !Ref Creator
