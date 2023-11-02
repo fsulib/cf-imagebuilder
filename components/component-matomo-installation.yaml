@@ -1,0 +1,56 @@
+name: 'Download and expand Matomo'
+description: "This component installs Matomo's dependencies and Matomo itself."
+schemaVersion: 1.0
+parameters:
+  - MatomoUrl:
+      type: string
+      default: 'http://builds.matomo.org/matomo-4.15.1.zip'
+      description: 'Source of Matomo application archive.'
+  - MatomoChecksum:
+      type: string
+      default: '33389e1286938a8435e11d025efe5fb2f94774b7d9a39df34e36bfd01664a156'
+      description: 'Matomo archive SHA256 checksum.'
+  - MatomoArchive:
+      type: string
+      default: 'matomo.zip'
+      description: 'Archive download filename.'
+
+phases:
+  - name: build
+    steps:
+      - name: InstallMatomoDependencies
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              sudo apt-get install -y \
+                nginx \
+                mysql-client \
+                php7.4 \
+                php7.4-fpm \
+                php7.4-gd \
+                php7.4-curl \
+                php7.4-mysql \
+                php7.4-xml \
+                php7.4-mbstring \
+                php-apcu \
+                unzip \
+                zip
+      - name: DownloadMatomoArchive
+        action: WebDownload
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          - source: '{{ MatomoUrl }}'
+            checksum: '{{ MatomoChecksum }}'
+            algorithm: SHA256
+            destination: '{{ MatomoArchive }}'
+      - name: ExpandMatomoArchive
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - unzip -qq {{ build.DownloadMatomoArchive.inputs[0].destination }} -d /var/www/html

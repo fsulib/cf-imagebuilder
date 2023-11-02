@@ -1,0 +1,53 @@
+name: 'Install Drupal 7 Dependencies'
+description: "This component installs Drupal 7's dependencies."
+schemaVersion: 1.0
+phases:
+  - name: build
+    steps:
+      - name: InstallDrupal7Dependencies
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              DEBIAN_FRONTEND=noninteractive apt-get install -y \
+                apache2 \
+                libgd3 \
+                mysql-client \
+                unzip \
+                php7.4 \
+                php7.4-fpm \
+                php7.4-cli \
+                php7.4-common \
+                php7.4-curl \
+                php7.4-dev \
+                php7.4-fpm \
+                php7.4-gd \
+                php7.4-json \
+                php7.4-soap \
+                php7.4-xml \
+                php7.4-zip \
+                php7.4-mysql \
+                php-date \
+                php-cas \
+                php7.4-mbstring \
+                zip \
+                postfix \
+                ghostscript \
+                ca-certificates
+      - name: DownloadDrush
+        action: WebDownload
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          - source: https://github.com/drush-ops/drush/releases/download/8.4.8/drush.phar
+            destination: /usr/local/bin/drush
+      - name: ChmodDrush
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - chmod +x /usr/local/bin/drush
+

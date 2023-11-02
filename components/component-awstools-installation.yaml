@@ -1,0 +1,108 @@
+name: 'Install AWS Tools'
+description: 'This component installs the awscli, the CloudWatch agent, EFS tools, and the CloudFormation helper scripts.'
+schemaVersion: 1.0
+parameters:
+  - CliTools:
+      type: string
+      default: 'https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip'
+      description: 'AWS CLI tools location.'
+  - CfnScripts:
+      type: string
+      default: 'https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz'
+      description: 'CloudFormation helper scripts location.'
+  - CWAgent:
+      type: string
+      default: 'https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb'
+      description: 'Debian package for CW Agent location.'
+  - PipInstaller:
+      type: string
+      default: 'https://bootstrap.pypa.io/get-pip.py'
+      description: 'Get pip bruh.'
+  - EFSUtils:
+      type: string
+      default: 'https://github.com/aws/efs-utils.git'
+      description: 'EFS utils github repo.'
+
+phases:
+  - name: build
+    steps:
+      - name: InstallSupportPackages
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              sudo apt-get install -y \
+                python2 \
+                python3 \
+                python3-setuptools \
+                unzip \
+                binutils \
+                jq \
+                zip
+      - name: DownloadTools
+        action: WebDownload
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          - source: '{{ CliTools }}'
+            destination: /tmp/awscli.zip
+          - source: '{{ CWAgent }}'
+            destination: /tmp/awscwagent.deb
+          - source: '{{ PipInstaller }}'
+            destination: /tmp/get-pip.py
+      - name: CloneEfsUtilsRepo
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - git clone '{{ EFSUtils }}'
+      - name: InstallAwsCli
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              unzip -qq '{{ build.DownloadTools.inputs[0].destination }}' -d /tmp
+              sudo /tmp/aws/install
+      - name: InstallAwsCwAgent
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              sudo dpkg -i -E '{{ build.DownloadTools.inputs[1].destination }}'
+      - name: ModCwAgentGroups
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - sudo usermod -a -G adm cwagent
+      - name: InstallPip3
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - sudo python3 '{{ build.DownloadTools.inputs[2].destination }}'
+      - name: InstallAwsCfn
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - sudo pip3 install '{{ CfnScripts }}' 
+      - name: BuildInstallEfsUtilsDebPkg
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - cd efs-utils
+            - ./build-deb.sh
+            - sudo apt-get -y install ./build/amazon-efs-utils*deb
