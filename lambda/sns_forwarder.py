@@ -26,11 +26,16 @@ detail_types = {
         "AVAILABLE": "ImageBuilder Job Completion",
         "FAILED": "ImageBuilder Job Failure"
         }
+filter_keys = ["name", "outputResources", "sourcePipelineArn",
+               "state", "versionlessArn"]
 
 def handler(event, context):
     """Handle incoming SNS; send to Events."""
     logger.info("Received message.")
     message_map = json.loads(event["Records"][0]["Sns"]["Message"])
+    message_string = json.dumps({k: v 
+                                 for k, v in message_map.items() 
+                                 if k in filter_keys})
     logger.info("Message is of type %s", message_map["state"]["status"])
     entry = {
             "Source": EVENT_SOURCE,
