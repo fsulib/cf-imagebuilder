@@ -1,0 +1,169 @@
+{
+  "semver": 3713820117856140828992339970,
+  "platform": "Linux",
+  "workflows": [
+    {
+      "workflowArn": "arn:aws:imagebuilder:us-east-1:627945338248:workflow/build/build-image/1.0.0/1"
+    },
+    {
+      "workflowArn": "arn:aws:imagebuilder:us-east-1:627945338248:workflow/test/test-image/1.0.0/1"
+    }
+  ],
+  "tags": {
+    "resourceArn": "arn:aws:imagebuilder:us-east-1:097815426181:image/docker-host-image-for-ubuntu-20-04/3.0.4/2",
+    "internalId": "028aa3f6-877e-4251-8845-2410bb9b7202"
+  },
+  "version": "3.0.4",
+  "executionRole": "arn:aws:iam::097815426181:role/aws-service-role/imagebuilder.amazonaws.com/AWSServiceRoleForImageBuilder",
+  "arn": "arn:aws:imagebuilder:us-east-1:097815426181:image/docker-host-image-for-ubuntu-20-04/3.0.4/2",
+  "buildVersion": 2,
+  "name": "Docker Host Image for Ubuntu 20_04",
+  "outputResources": {
+    "amis": [
+      {
+        "region": "us-east-1",
+        "accountId": "097815426181",
+        "description": "Ubuntu 2004 DockerHost",
+        "image": "ami-03caff1050b75ae2c",
+        "name": "DockerHost-Ubuntu-2004_2023-10-30T17-57-43.457Z"
+      },
+      {
+        "region": "us-east-2",
+        "accountId": "097815426181",
+        "description": "Ubuntu 2004 DockerHost",
+        "image": "ami-0ba76b05c1fe9b373",
+        "name": "DockerHost-Ubuntu-2004_2023-10-30T17-57-43.457Z"
+      }
+    ]
+  },
+  "sourcePipelineArn": "arn:aws:imagebuilder:us-east-1:097815426181:image-pipeline/dockerhost-pipeline-for-ubuntu-2004",
+  "infrastructureConfiguration": {
+    "logging": {
+      "s3Logs": {
+        "s3BucketName": "logs.shared-services.lib.fsu.edu",
+        "s3KeyPrefix": "imagebuilder"
+      }
+    },
+    "instanceProfileName": "Shared-Imagebuilder-Pipelines-ImageBuilderInstanceProfile-UnSTSvrHFIks",
+    "description": "A simple infrastucture config intended for running simple components.",
+    "accountId": "097815426181",
+    "resourceTags": {
+      "lib:created-by": "ImageBuilder Service",
+      "lib:env": "dev"
+    },
+    "terminateInstanceOnFailure": true,
+    "dateCreated": "Nov 19, 2022 9:43:39 PM",
+    "subnetId": "subnet-0423b86b48bc168ac",
+    "securityGroupIds": [
+      "sg-007d043dbdcaae261"
+    ],
+    "name": "Simple Infrastructure Configuration",
+    "snsTopicArn": "arn:aws:sns:us-east-1:097815426181:ImageBuilderTopic",
+    "instanceTypes": [
+      "t3.large",
+      "t3.medium"
+    ],
+    "arn": "arn:aws:imagebuilder:us-east-1:097815426181:infrastructure-configuration/simple-infrastructure-configuration",
+    "tags": {
+      "resourceArn": "arn:aws:imagebuilder:us-east-1:097815426181:infrastructure-configuration/simple-infrastructure-configuration",
+      "internalId": "ef85dc61-cbe9-4a1e-af99-71d48b259cda"
+    }
+  },
+  "state": {
+    "status": "AVAILABLE"
+  },
+  "type": "AMI",
+  "enhancedImageMetadataEnabled": true,
+  "osVersion": "Ubuntu 20",
+  "accountId": "097815426181",
+  "distributionConfiguration": {
+    "accountId": "097815426181",
+    "description": "Ubuntu 2004 DockerHost Distribution",
+    "dateUpdated": "Oct 30, 2023 5:54:19 PM",
+    "dateCreated": "Nov 19, 2022 9:40:58 PM",
+    "arn": "arn:aws:imagebuilder:us-east-1:097815426181:distribution-configuration/dockerhost-ubuntu-2004-image-distribution",
+    "tags": {
+      "resourceArn": "arn:aws:imagebuilder:us-east-1:097815426181:distribution-configuration/dockerhost-ubuntu-2004-image-distribution",
+      "internalId": "a78d56a2-2891-48f8-b790-0976e8aa46ec"
+    },
+    "distributions": [
+      {
+        "amiDistributionConfiguration": {
+          "amiTags": {
+            "lib:app": "any",
+            "lib:env": "any",
+            "lib:build-version": "build-2",
+            "Name": "DockerHost-Ubuntu-2004"
+          },
+          "description": "Ubuntu 2004 DockerHost",
+          "launchPermission": {
+            "organizationArns": [
+              "arn:aws:organizations::594795290636:organization/o-q6n8srwnyv"
+            ]
+          },
+          "name": "DockerHost-Ubuntu-2004_2023-10-30T17-57-43.457Z"
+        },
+        "region": "us-east-2"
+      },
+      {
+        "amiDistributionConfiguration": {
+          "amiTags": {
+            "lib:app": "any",
+            "lib:env": "any",
+            "lib:build-version": "build-2",
+            "Name": "DockerHost-Ubuntu-2004"
+          },
+          "description": "Ubuntu 2004 DockerHost",
+          "launchPermission": {
+            "organizationArns": [
+              "arn:aws:organizations::594795290636:organization/o-q6n8srwnyv"
+            ]
+          },
+          "name": "DockerHost-Ubuntu-2004_2023-10-30T17-57-43.457Z"
+        },
+        "region": "us-east-1"
+      }
+    ],
+    "name": "DockerHost Ubuntu 2004 Image Distribution"
+  },
+  "versionlessArn": "arn:aws:imagebuilder:us-east-1:097815426181:image/docker-host-image-for-ubuntu-20-04",
+  "dateCreated": "Oct 30, 2023 5:57:43 PM",
+  "buildType": "USER_INITIATED",
+  "imageRecipe": {
+    "components": [
+      {
+        "componentArn": "arn:aws:imagebuilder:us-east-1:097815426181:component/patch-base-ubuntu-image/1.0.0/1"
+      },
+      {
+        "componentArn": "arn:aws:imagebuilder:us-east-1:097815426181:component/install-aws-tools-and-dependencies/2.0.2/1"
+      },
+      {
+        "componentArn": "arn:aws:imagebuilder:us-east-1:097815426181:component/install-docker/2.0.0/1"
+      },
+      {
+        "componentArn": "arn:aws:imagebuilder:us-east-1:097815426181:component/install-signal-sciences/1.0.3/1"
+      }
+    ],
+    "parentImage": "arn:aws:imagebuilder:us-east-1:627945338248:image/ubuntu-server-20-lts-x86/2023.10.26/1",
+    "description": "Patches OS, installs standard AWS tools, installs Docker-CE, installs Signal Sciences.",
+    "accountId": "097815426181",
+    "platform": "Linux",
+    "version": "3.0.4",
+    "blockDeviceMappings": [],
+    "dateCreated": "Jan 27, 2023 2:17:01 PM",
+    "arn": "arn:aws:imagebuilder:us-east-1:097815426181:image-recipe/docker-host-image-for-ubuntu-20-04/3.0.4",
+    "tags": {
+      "resourceArn": "arn:aws:imagebuilder:us-east-1:097815426181:image-recipe/docker-host-image-for-ubuntu-20-04/3.0.4",
+      "internalId": "af6fda4f-cfa3-433a-acd1-d056924c9e58"
+    },
+    "name": "Docker Host Image for Ubuntu 20_04"
+  },
+  "imageTestsConfigurationDocument": {
+    "timeoutMinutes": 720,
+    "imageTestsEnabled": true
+  },
+  "buildExecutionId": "a85fbff7-1c53-465e-89c4-27a8b10ac7e8",
+  "testExecutionId": "651d9547-781a-4f18-98a6-a0e3513f3f7e",
+  "distributionJobId": "0d152751-4216-4c51-a21c-27776552aa20",
+  "integrationJobId": "6e928308-25d3-4e71-ad40-26c30ee4bb8f"
+}
