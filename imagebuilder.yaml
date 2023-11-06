@@ -13,6 +13,11 @@ Parameters:
     Type: String
     Default: ImageBuilder
 
+  BillTo:
+    Description: lib:bill-to value
+    Type: String
+    Default: DI
+
   Env:
     Description: networking environment
     Type: String
@@ -41,7 +46,7 @@ Parameters:
     Type: String
     Default: /images/ami
 
-  LogLevel:
+  LambdaLogLevel:
     Description: parameter writer cloudwatch log level
     Type: String
     Default: info
@@ -49,6 +54,16 @@ Parameters:
       - error
       - info
       - debug
+
+  EventSourceIdentifier:
+    Description: sets the source property for the forwarded event
+    Type: String
+    Default: edu.fsu.lib
+
+  TargetEventBus:
+    Description: forwarded event destination bus name
+    Type: String
+    Default: CentralEventBus
 
   # Infrastructure Configuration
   
@@ -124,7 +139,24 @@ Mappings:
       SubnetId: subnet-064e75118bd7b4c60
 
 Resources:
-  
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      ReceiveMessageWaitTimeSeconds: 10
+      QueueName: EventForwarderDLQ
+      Tags:
+        - Key: lib:app
+          Value: !Ref App
+        - Key: lib:env
+          Value: !Ref Env
+        - Key: lib:bill-to
+          Value: !Ref BillTo
+        - Key: lib:commit
+          Value: !Ref Commit
+        - Key: lib:created-by
+          Value: !Ref Creator
+
   # Notifications and Events
 
   ImageBuilderSnsTopic:
@@ -174,11 +206,14 @@ Resources:
         "lib:bill-to": DI
         "lib:commit": !Ref Commit
       CodeUri: lambda/
+      DeadLetterQueue:
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+        Type: SQS
       Handler: parameter_writer.handler
       Environment:
         Variables:
           PARAMETER_PREFIX: !Ref ParameterPrefix
-          LOG_LEVEL: !Ref LogLevel
+          LOG_LEVEL: !Ref LambdaLogLevel
       Timeout: 30
       MemorySize: 128
       Runtime: python3.11
@@ -190,7 +225,84 @@ Resources:
           Properties:
             Topic: !Ref ImageBuilderSnsTopic
 
+  # EventForwarder
+
+  EventForwarder:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt EventForwarderIamRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !Ref TargetEventBus
+          EVENT_SOURCE: !Ref EventSourceIdentifier
+          LOG_LEVEL: !Ref LambdaLogLevel
+      Tags:
+        "Name": "ImageBuilder-EventForwarder"
+        "lib:created-by": !Ref Creator
+        "lib:app": !Ref App
+        "lib:env": !Ref Env
+        "lib:commit": !Ref Commit
+        "lib:bill-to": !Ref BillTo
+      Description: Writes selected ImageBuilder notification properties to a an event bus.
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+      Runtime: python3.11
+      Handler: event_forwarder.handler
+      CodeUri: lambda/
+      MemorySize: 128
+      Timeout: 30
+      Events:
+        ForwardEventOnSns:
+          Type: SNS
+          Properties:
+            Topic: !Ref ImageBuilderSnsTopic
+
   # IAM
+
+  EventForwarderIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /fsulib/
+      Policies:
+        - PolicyName: EventForwarderPolicy
+          PolicyDocument: !Sub |
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "EventBusWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:PutEvents"
+                  ],
+                  "Resource": [
+                    "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${TargetEventBus}"
+                  ]
+                },
+                {
+                  "Sid": "SQSWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:SendMessage"
+                  ],
+                  "Resource": [
+                    "${DeadLetterQueue.Arn}"
+                  ]
+                }
+              ]
+            }
 
   ParamWriterIamRole:
     Type: AWS::IAM::Role
@@ -218,9 +330,30 @@ Resources:
                   "Effect": "Allow",
                   "Action": [
                       "ssm:AddTagsToResource",
+                      "ssm:GetParameters",
+                      "ssm:GetParameter",
                       "ssm:PutParameter"
                   ],
                   "Resource": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterPrefix}/*"
+                },
+                {
+                  "Sid": "ParameterRead",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:GetParameters",
+                      "ssm:GetParameter"
+                  ],
+                  "Resource": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterPrefix}/*"
+                },
+                {
+                  "Sid": "SQSWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:SendMessage"
+                  ],
+                  "Resource": [
+                    "${DeadLetterQueue.Arn}"
+                  ]
                 }
               ]
             }
@@ -294,7 +427,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: ImageBuilderSecurityGroup
-      GroupName: ImageBuilderInstanceSg
+      GroupName: !Sub ImageBuilderInstanceSecurityGroup_${Commit}
       SecurityGroupEgress:
         - CidrIp: 0.0.0.0/0
           Description: World Egress
