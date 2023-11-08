@@ -469,13 +469,14 @@ Resources:
       Name: Install AWS Tools and Dependencies
       Platform: Linux
       SupportedOsVersions:
+        - Ubuntu 22
         - Ubuntu 20
         - Ubuntu 18
       Tags:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 2.0.2
+      Version: 2.1.0
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -607,7 +608,7 @@ Resources:
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu 18.04
         'lib:dockerhost': 'true'
-      Version: 2.0.2
+      Version: 2.1.0
 
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -625,7 +626,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 3.0.4
+      Version: 3.1.0
 
   Ubuntu2004ECSHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -643,7 +644,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'false'
-      Version: 2.0.2
+      Version: 2.1.0
 
   Ubuntu1804StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -659,7 +660,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 2.0.2
+      Version: 2.1.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -676,7 +677,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.4
+      Version: 2.1.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -694,7 +695,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.2.1
+      Version: 2.3.0
       
   Ubuntu1804AnsibleHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -711,7 +712,7 @@ Resources:
         "lib:distribution": Ubuntu 18.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 2.0.2
+      Version: 2.1.0
 
   Ubuntu2004Drupal7HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -729,7 +730,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.4
+      Version: 2.1.0
       
   Ubuntu2004Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -747,7 +748,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.5
+      Version: 2.1.0
       
   Ubuntu2210Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -769,7 +770,7 @@ Resources:
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'false'
-      Version: 1.1.0
+      Version: 1.2.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
