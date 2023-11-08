@@ -118,7 +118,7 @@ Parameters:
   Ubuntu2210BaseAmiId:
     Description: AMI id for the base Ubuntu 22.10 image.
     Type: AWS::EC2::Image::Id
-    Default: ami-0638741e0c9aabde6
+    Default: ami-0e0ce710d6346d076
 
 Mappings:
 
