@@ -1,0 +1,1037 @@
+Transform: AWS::Serverless-2016-10-31
+
+AWSTemplateFormatVersion: "2010-09-09"
+
+Description: ImageBuilder resources.
+
+Parameters:
+
+  # General
+
+  App:
+    Description: lib:app value
+    Type: String
+    Default: ImageBuilder
+
+  BillTo:
+    Description: lib:bill-to value
+    Type: String
+    Default: DI
+
+  Env:
+    Description: networking environment
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - test
+      - prod
+
+  Creator:
+    Description: fsuid
+    Type: String
+
+  Commit:
+    Description: commit id
+    Type: String
+
+  # Notification Configuration
+
+  BuildSupervisorEmail:
+    Description: Email address of person responsible for image builds.
+    Type: String
+
+  ParameterPrefix:
+    Description: ssm parameter prefix
+    Type: String
+    Default: /images/ami
+
+  LambdaLogLevel:
+    Description: parameter writer cloudwatch log level
+    Type: String
+    Default: info
+    AllowedValues:
+      - error
+      - info
+      - debug
+
+  EventSourceIdentifier:
+    Description: sets the source property for the forwarded event
+    Type: String
+    Default: edu.fsu.lib
+
+  TargetEventBus:
+    Description: forwarded event destination bus name
+    Type: String
+    Default: CentralEventBus
+
+  # Infrastructure Configuration
+  
+  InstanceTypeOne:
+    Description: EC2 type performing the build.
+    Type: String
+    Default: m5.xlarge
+
+  InstanceTypeTwo:
+    Description: EC2 type performing the build.
+    Type: String
+    Default: m5.2xlarge
+
+  # Pipeline Configuration
+
+  ImageTestsTimeout:
+    Description: Max duration for image testing.
+    Type: Number
+    Default: 120
+
+  # Buckets
+  
+  LoggingBucket:
+    Description: Logs go here.
+    Type: String
+    Default: logs.shared-services.lib.fsu.edu
+
+  LoggingPrefix:
+    Description: Object name prefix.
+    Type: String
+    Default: imagebuilder
+
+  ComponentBucket:
+    Description: Components are here.
+    Type: String
+    Default: imagebuilder.shared-services.lib.fsu.edu
+
+  ComponentPrefix:
+    Description: Object name prefix.
+    Type: String
+    Default: components
+
+  # Distribution Configuration
+
+  OrganizationArn:
+    Description: The ARN of our organization.
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /org/arn
+
+  # Ubuntu 22.10 Base
+
+  Ubuntu2210BaseAmiId:
+    Description: AMI id for the base Ubuntu 22.10 image.
+    Type: AWS::EC2::Image::Id
+    Default: ami-0e0ce710d6346d076
+
+Mappings:
+
+  Environments:
+
+    dev:
+      SubnetId: subnet-03fc4450163fba56d
+
+    test:
+      SubnetId: subnet-0b77e105638fbc027
+
+    prod:
+      SubnetId: subnet-064e75118bd7b4c60
+
+Resources:
+
+  DeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      ReceiveMessageWaitTimeSeconds: 10
+      QueueName: EventForwarderDLQ
+      Tags:
+        - Key: lib:app
+          Value: !Ref App
+        - Key: lib:env
+          Value: !Ref Env
+        - Key: lib:bill-to
+          Value: !Ref BillTo
+        - Key: lib:commit
+          Value: !Ref Commit
+        - Key: lib:created-by
+          Value: !Ref Creator
+
+  # Notifications and Events
+
+  ImageBuilderSnsTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: ImageBuilderNotifications
+      Tags:
+        - Key: Name
+          Value: ImageBuilderSnsTopic
+        - Key: lib:created-by
+          Value: !Ref Creator
+
+  ImageBuilderSnsTopicSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref BuildSupervisorEmail
+      Protocol: email
+      TopicArn: !Ref ImageBuilderSnsTopic
+
+  ImageBuilderSnsTopicPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service:
+              - imagebuilder.amazonaws.com
+          Action:
+            - sns:Publish
+          Resource: !Ref ImageBuilderSnsTopic
+      Topics:
+        - !Ref ImageBuilderSnsTopic
+
+  # ParamWriter Lambda
+
+  ParamWriter:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt ParamWriterIamRole.Arn
+      Tags:
+        "Name": "ImageBuilder-ParameterWriter"
+        "lib:app": !Ref App
+        "lib:env": "any"
+        "lib:created-by": !Ref Creator
+        "lib:bill-to": DI
+        "lib:commit": !Ref Commit
+      CodeUri: lambda/
+      DeadLetterQueue:
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+        Type: SQS
+      Handler: parameter_writer.handler
+      Environment:
+        Variables:
+          PARAMETER_PREFIX: !Ref ParameterPrefix
+          LOG_LEVEL: !Ref LambdaLogLevel
+      Timeout: 30
+      MemorySize: 128
+      Runtime: python3.11
+      RuntimeManagementConfig:
+        UpdateRuntimeOn: Auto
+      Events:
+        WriteParamOnSns:
+          Type: SNS
+          Properties:
+            Topic: !Ref ImageBuilderSnsTopic
+
+  # EventForwarder
+
+  EventForwarder:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt EventForwarderIamRole.Arn
+      Environment:
+        Variables:
+          EVENT_BUS_NAME: !Ref TargetEventBus
+          EVENT_SOURCE: !Ref EventSourceIdentifier
+          LOG_LEVEL: !Ref LambdaLogLevel
+      Tags:
+        "Name": "ImageBuilder-EventForwarder"
+        "lib:created-by": !Ref Creator
+        "lib:app": !Ref App
+        "lib:env": !Ref Env
+        "lib:commit": !Ref Commit
+        "lib:bill-to": !Ref BillTo
+      Description: Writes selected ImageBuilder notification properties to a an event bus.
+      DeadLetterQueue:
+        Type: SQS
+        TargetArn: !GetAtt DeadLetterQueue.Arn
+      Runtime: python3.11
+      Handler: event_forwarder.handler
+      CodeUri: lambda/
+      MemorySize: 128
+      Timeout: 30
+      Events:
+        ForwardEventOnSns:
+          Type: SNS
+          Properties:
+            Topic: !Ref ImageBuilderSnsTopic
+
+  # IAM
+
+  EventForwarderIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /fsulib/
+      Policies:
+        - PolicyName: EventForwarderPolicy
+          PolicyDocument: !Sub |
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "EventBusWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                    "events:PutEvents"
+                  ],
+                  "Resource": [
+                    "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${TargetEventBus}"
+                  ]
+                },
+                {
+                  "Sid": "SQSWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:SendMessage"
+                  ],
+                  "Resource": [
+                    "${DeadLetterQueue.Arn}"
+                  ]
+                }
+              ]
+            }
+
+  ParamWriterIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sts:AssumeRole
+            Principal:
+              Service: 
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Path: /fsulib/
+      Policies:
+        - PolicyName: ParameterWriterPolicy
+          PolicyDocument: !Sub | 
+            {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Sid": "ParameterWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:AddTagsToResource",
+                      "ssm:GetParameters",
+                      "ssm:GetParameter",
+                      "ssm:PutParameter"
+                  ],
+                  "Resource": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterPrefix}/*"
+                },
+                {
+                  "Sid": "ParameterRead",
+                  "Effect": "Allow",
+                  "Action": [
+                      "ssm:GetParameters",
+                      "ssm:GetParameter"
+                  ],
+                  "Resource": "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ParameterPrefix}/*"
+                },
+                {
+                  "Sid": "SQSWrite",
+                  "Effect": "Allow",
+                  "Action": [
+                    "sqs:SendMessage"
+                  ],
+                  "Resource": [
+                    "${DeadLetterQueue.Arn}"
+                  ]
+                }
+              ]
+            }
+
+  ImageBuilderIamRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Description: Allows ImageBuilder to operate in fsulib's environments.
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+        - arn:aws:iam::aws:policy/EC2InstanceProfileForImageBuilder
+      Path: '/instance_roles/'
+      Policies:
+        - PolicyName: S3DownloadPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - imagebuilder:S3Download
+                Resource: '*'
+        - PolicyName: BucketPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - s3:ListBucket
+                Resource: !Sub arn:aws:s3:::${ComponentBucket}
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource: !Sub arn:aws:s3:::${ComponentBucket}/*
+        - PolicyName: LogBucketPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - s3:ListBucket 
+                Resource: !Sub arn:aws:s3:::${LoggingBucket}
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                Resource: !Sub arn:aws:s3:::${LoggingBucket}/${LoggingPrefix}/*
+      Tags:
+        - Key: Name
+          Value: Image Builder IAM Role
+        - Key: lib:created-by
+          Value: !Ref Creator
+
+  ImageBuilderInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: '/instance_profiles/'
+      Roles:
+        - !Ref ImageBuilderIamRole
+ 
+  # Security Group
+  
+  ImageBuilderSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ImageBuilderSecurityGroup
+      GroupName: !Sub ImageBuilderInstanceSecurityGroup_${Commit}
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: World Egress
+          IpProtocol: '-1'
+      VpcId: !Sub '{{resolve:ssm:/vpc/${Env}/vpc_id}}'
+      Tags:
+        - Key: Name
+          Value: ImageBuilderSecurityGroup
+        - Key: lib:created-by
+          Value: !Ref Creator
+        - Key: lib:env
+          Value: dev
+
+  # Components
+
+  UbuntuBaseUpdateComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Formalized version from a CF template.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-linux-update.yaml
+      Description: Updates the managed base image.
+      Name: Patch Base Ubuntu Image
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+        - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Base Update Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallAwsToolsComponentFocal:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Rolling with my default homies.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-focal.yaml
+      Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
+      Name: Install AWS Tools and Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu AWS Tools Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallAwsToolsComponentMantic:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Rolling with my default homies.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-mantic.yaml
+      Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
+      Name: Install AWS Tools and Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 22
+      Tags:
+        'Name': 'Ubuntu AWS Tools Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallDockerComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'New parameterized version, does not use key-add, installs docker-compose-plugin.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-docker-installation-2.0.yaml
+      Description: Installs the Docker GPG key, repo, application, and dependencies.
+      Name: Install Docker
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 22
+        - Ubuntu 20
+        - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Docker Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 2.1.0
+
+  UbuntuInstallMatomoComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Updated to Matomo 4.15.1'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-matomo-installation.yaml
+      Description: Installs Matomo's dependencies, downloads Matomo, and expands the archive.
+      Name: Install Matomo
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Matomo Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.2.1
+
+  UbuntuInstallAnsibleComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-ansible.yaml
+      Description: Installs Ansible onto an Ubuntu base image.
+      Name: Install Ansible
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 18
+      Tags:
+        'Name': 'Ubuntu Installation Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallDrupal7DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'New component.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal7-dependencies.yaml
+      Description: Installs Drupal 7's dependencies.
+      Name: Install Drupal7 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Drupal Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallDrupal9DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Remove credential download.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal9-dependencies.yaml
+      Description: Installs Drupal 9's dependencies.
+      Name: Install Drupal9 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Drupal 9 Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.1.0
+
+  UbuntuInstallSignalSciencesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Corrected typo in condition.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-signal-sciences.yaml
+      Description: Installs Signal Sciences repo, agent, and Apache module.
+      Name: Install Signal Sciences
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Signal Sciences Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.3
+
+  UbuntuInstallECSAgentComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation of component.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-ecs-agent-installation.yaml
+      Description: Installs the Amazon ECS agent.
+      Name: Install Amazon ECS Agent
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu ECS Agent Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+
+  # Recipes
+  
+  Ubuntu2004DockerHostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs Signal Sciences.
+      Name: Docker Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": 'true'
+        "lib:signalsciences": 'true'
+      Version: 4.0.0
+
+  Ubuntu2210DockerHostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - lunar
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value: 
+                - jammy
+      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs Signal Sciences.
+      Name: Docker Host Image for Ubuntu 22_10
+      ParentImage: !Ref Ubuntu2210BaseAmiId
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 22.10
+        "lib:dockerhost": 'true'
+        "lib:signalsciences": 'true'
+      Version: 4.0.0
+
+  Ubuntu2004ECSHostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallECSAgentComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs the ECS Agent.
+      Name: ECS Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": 'true'
+        "lib:signalsciences": 'false'
+      Version: 4.0.0
+
+  Ubuntu2004StandardImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Signal Sciences.
+      Name: Standard Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 4.0.0
+
+  Ubuntu2004MatomoHostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallMatomoComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Matomo 4.14.2, installs Signal Sciences.
+      Name: Matomo Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 4.0.0
+
+  Ubuntu2210Drupal9HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - jammy
+      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
+      Name: Drupal9 Host Image for Ubuntu 22_10
+      ParentImage: !Ref Ubuntu2210BaseAmiId
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 22.10
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'false'
+      Version: 2.0.0
+      AdditionalInstanceConfiguration:
+        SystemsManagerAgent:
+          UninstallAfterBuild: false
+
+  # Infrastructure Configuration 
+
+  SimpleInfrastructureConfiguration:
+    Type: AWS::ImageBuilder::InfrastructureConfiguration
+    Properties:
+      Description: A simple infrastucture config intended for running simple components.
+      InstanceProfileName: !Ref ImageBuilderInstanceProfile
+      InstanceTypes:
+        - !Ref InstanceTypeOne
+        - !Ref InstanceTypeTwo
+      Logging:
+        S3Logs:
+          S3BucketName: !Ref LoggingBucket
+          S3KeyPrefix: !Ref LoggingPrefix
+      Name: Simple Infrastructure Configuration
+      ResourceTags:
+        "lib:created-by": "ImageBuilder Service"
+        "lib:env": "dev"
+      SecurityGroupIds:
+        - !Ref ImageBuilderSecurityGroup
+      SnsTopicArn: !Ref ImageBuilderSnsTopic
+      SubnetId:
+        Fn::FindInMap:
+          - Environments
+          - !Ref Env
+          - SubnetId
+      Tags:
+        "Name": "Simple ImageBuilder Infrastructure"
+        "lib:created-by": !Ref Creator
+      TerminateInstanceOnFailure: true
+
+  # Distribution Configurations
+
+  DockerHostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 DockerHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: DockerHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 DockerHost
+            Name: DockerHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: us-east-2
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: DockerHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 DockerHost
+            Name: DockerHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: DockerHost Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": DockerHost Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  DockerHostUbuntu2210Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2210 DockerHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: DockerHost-Ubuntu-2210
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2210 DockerHost
+            Name: DockerHost-Ubuntu-2210_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: us-east-2
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: DockerHost-Ubuntu-2210
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2210 DockerHost
+            Name: DockerHost-Ubuntu-2210_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: DockerHost Ubuntu 2210 Image Distribution
+      Tags:
+        "Name": DockerHost Ubuntu 2210 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  StandardUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 Standard Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Standard-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 Standard
+            Name: Standard-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: Standard Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": Standard Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  ECSHostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 ECSHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: ECSHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 ECSHost
+            Name: ECSHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: ECSHost Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": ECSHost Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  MatomoHostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 MatomoHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: MatomoHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': stats
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 MatomoHost
+            Name: MatomoHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: MatomoHost Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": MatomoHost Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  Drupal9HostUbuntu2210Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2210 Drupal9Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal9Host-Ubuntu-2210
+              'lib:env': any
+              'lib:app': drupal9
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2210 Drupal9Host
+            Name: Drupal9Host-Ubuntu-2210_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: Drupal9Host Ubuntu 2210 Image Distribution
+      Tags:
+        "Name": Drupal9Host Ubuntu 2210 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  # Pipeline Configurations
+
+  # TODO Automated build scheduling based on dependency updates
+  # TODO Properties for Status (ENABLED|DISABLED)
+    
+  Ubuntu2004DockerHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a DockerHost 2004 image
+      DistributionConfigurationArn: !Ref DockerHostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004DockerHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: DockerHost Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 DockerHost Pipeline
+        'lib:created-by': mshackelford
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'true'
+    
+  Ubuntu2004ECSHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a ECS Host 2004 image
+      DistributionConfigurationArn: !Ref ECSHostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004ECSHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: ECSHost Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 ECSHost Pipeline
+        'lib:created-by': mshackelford
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'true'
+    
+  Ubuntu2004StandardPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Standard 2004 image
+      DistributionConfigurationArn: !Ref StandardUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004StandardImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Standard Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 Standard Pipeline
+        'lib:created-by': mshackelford
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'false'
+
+  Ubuntu2004MatomoHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a MatomoHost 2004 image.
+      DistributionConfigurationArn: !Ref MatomoHostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004MatomoHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: MatomoHost Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 MatomoHost Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'false'
+
+  Ubuntu2210Drupal9HostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Drupal9Host 2210 image.
+      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2210Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2210Drupal9HostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Drupal9Host Pipeline for Ubuntu 2210
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2210 Drupal9Host Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2210
+        'lib:dockerhost': false
+
+  Ubuntu2210DockerHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a DockerHost 2210 image.
+      DistributionConfigurationArn: !Ref DockerHostUbuntu2210Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2210DockerHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: DockerHost Pipeline for Ubuntu 2210
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2210 DockerHost Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2210
+        'lib:dockerhost': false
+
+# vim: set fdm=indent:

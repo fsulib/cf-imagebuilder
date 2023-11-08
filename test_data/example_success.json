@@ -1,0 +1,31 @@
+{
+    "Records": [
+        {
+            "EventVersion": "1.0",
+            "EventSubscriptionArn": "arn:aws:sns:us-east-1:123456789012:sns-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+            "EventSource": "aws:sns",
+            "Sns": {
+                "SignatureVersion": "1",
+                "Timestamp": "2019-01-02T12:45:07.000Z",
+                "Signature": "tcc6faL2yUC6dgZdmrwh1Y4cGa/ebXEkAi6RibDsvpi+tE/1+82j...65r==",
+                "SigningCertUrl": "https://sns.us-east-1.amazonaws.com/SimpleNotificationService-ac565b8b1a6c5d002d285f9598aa1d9b.pem",
+                "MessageId": "95df01b4-ee98-5cb9-9903-4c221d41eb5e",
+                "Message": "{\"versionlessArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:image/example-linux-image\", \"semver\": 1237940039285380274899124227, \"arn\": \"arn:aws:imagebuilder:us-west-1:123456789012:image/example-linux-image/1.0.0/3\", \"name\": \"example-linux-image\", \"version\": \"1.0.0\", \"type\": \"AMI\", \"buildVersion\": 3, \"state\": {\"status\": \"AVAILABLE\"}, \"platform\": \"Linux\", \"imageRecipe\": {\"arn\": \"arn:aws:imagebuilder:us-west-1:123456789012:image-recipe/example-linux-image/1.0.0\", \"name\": \"amjule-barebones-linux\", \"version\": \"1.0.0\", \"components\": [{\"componentArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:component/update-linux/1.0.2/1\"}], \"platform\": \"Linux\", \"parentImage\": \"arn:aws:imagebuilder:us-west-1:987654321098:image/amazon-linux-2-x86/2022.6.14/1\", \"blockDeviceMappings\": [{\"deviceName\": \"/dev/xvda\", \"ebs\": {\"encrypted\": false, \"deleteOnTermination\": true, \"volumeSize\": 8, \"volumeType\": \"gp2\"}}], \"dateCreated\": \"Feb 24, 2021 12:31:54 AM\", \"tags\": {\"internalId\": \"1a234567-8901-2345-bcd6-ef7890123456\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:image-recipe/example-linux-image/1.0.0\"}, \"workingDirectory\": \"/tmp\", \"accountId\": \"462045008730\"}, \"sourcePipelineArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:image-pipeline/example-linux-pipeline\", \"infrastructureConfiguration\": {\"arn\": \"arn:aws:imagebuilder:us-west-1:123456789012:infrastructure-configuration/example-linux-infra-config-uswest1\", \"name\": \"example-linux-infra-config-uswest1\", \"instanceProfileName\": \"example-linux-ib-baseline-admin\", \"tags\": {\"internalId\": \"234abc56-d789-0123-a4e5-6b789d012c34\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:infrastructure-configuration/example-linux-infra-config-uswest1\"}, \"logging\": {\"s3Logs\": {\"s3BucketName\": \"12345-example-linux-testbucket-uswest1\"}}, \"keyPair\": \"example-linux-key-pair-uswest1\", \"terminateInstanceOnFailure\": true, \"snsTopicArn\": \"arn:aws:sns:us-west-1:123456789012:example-linux-ibnotices-uswest1\", \"dateCreated\": \"Feb 24, 2021 12:31:55 AM\", \"accountId\": \"123456789012\"}, \"imageTestsConfigurationDocument\": {\"imageTestsEnabled\": true, \"timeoutMinutes\": 720}, \"distributionConfiguration\": {\"arn\": \"arn:aws:imagebuilder:us-west-1:123456789012:distribution-configuration/example-linux-distribution\", \"name\": \"example-linux-distribution\", \"dateCreated\": \"Feb 24, 2021 12:31:56 AM\", \"distributions\": [{\"region\": \"us-west-1\", \"amiDistributionConfiguration\": {}}], \"tags\": {\"internalId\": \"345abc67-8910-12d3-4ef5-67a8b90c12de\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:distribution-configuration/example-linux-distribution\"}, \"accountId\": \"123456789012\"}, \"dateCreated\": \"Jul 28, 2022 1:13:45 AM\", \"outputResources\": {\"amis\": [{\"region\": \"us-west-1\", \"image\": \"ami-01a23bc4def5a6789\", \"name\": \"example-linux-image 2022-07-28T01-14-17.416Z\", \"accountId\": \"123456789012\"}]}, \"buildExecutionId\": \"ab0cd12e-34fa-5678-b901-2c3456d789e0\", \"testExecutionId\": \"6a7b8901-cdef-234a-56b7-8cd89ef01234\", \"distributionJobId\": \"1f234567-8abc-9d0e-1234-fa56b7c890de\", \"integrationJobId\": \"432109b8-afe7-6dc5-4321-0ba98f7654e3\", \"accountId\": \"123456789012\", \"osVersion\": \"Amazon Linux 2\", \"enhancedImageMetadataEnabled\": true, \"buildType\": \"USER_INITIATED\", \"tags\": {\"internalId\": \"901e234f-a567-89bc-0123-d4e567f89a01\", \"resourceArn\": \"arn:aws:imagebuilder:us-west-1:123456789012:image/example-linux-image/1.0.0/3\"}}",
+               "MessageAttributes": {
+                    "Test": {
+                        "Type": "String",
+                        "Value": "TestString"
+                    },
+                    "TestBinary": {
+                        "Type": "Binary",
+                        "Value": "TestBinary"
+                    }
+                },
+                "Type": "Notification",
+                "UnsubscribeUrl": "https://sns.us-east-1.amazonaws.com/?Action=Unsubscribe&amp;SubscriptionArn=arn:aws:sns:us-east-1:123456789012:test-lambda:21be56ed-a058-49f5-8c98-aedd2564c486",
+                "TopicArn":"arn:aws:sns:us-east-1:123456789012:sns-lambda",
+                "Subject": "TestInvoke"
+            }
+        }
+    ]
+}
