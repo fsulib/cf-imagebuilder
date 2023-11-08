@@ -461,7 +461,7 @@ Resources:
       ChangeDescription: 'Rolling with my default homies.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-focal.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
-      Name: Install AWS Tools and Dependencies
+      Name: Install AWS Tools and Dependencies Focal
       Platform: Linux
       SupportedOsVersions:
         - Ubuntu 20
@@ -477,7 +477,7 @@ Resources:
       ChangeDescription: 'Rolling with my default homies.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-mantic.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
-      Name: Install AWS Tools and Dependencies
+      Name: Install AWS Tools and Dependencies Mantic
       Platform: Linux
       SupportedOsVersions:
         - Ubuntu 22

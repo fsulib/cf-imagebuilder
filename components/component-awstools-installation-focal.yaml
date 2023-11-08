@@ -1,4 +1,4 @@
-name: 'Install AWS Tools'
+name: 'Install AWS Tools Focal'
 description: 'This component installs the awscli, the CloudWatch agent, EFS tools, and the CloudFormation helper scripts.'
 schemaVersion: 1.0
 parameters:
