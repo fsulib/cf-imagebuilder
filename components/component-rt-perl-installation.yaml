@@ -1,0 +1,88 @@
+name: 'Install Perl'
+description: 'This component compiles and installs perl from source.'
+schemaVersion: 1.0
+parameters:
+  - PerlVersion:
+      type: string
+      default: 5.38.0
+      description: 'Current perl maintenance release.'
+  - PerlChecksum:
+      type: string
+      default: '213ef58089d2f2c972ea353517dc60ec3656f050dcc027666e118b508423e517'
+      description: 'Perl tarball SHA256 hash.'
+phases:
+  - name: build
+    steps: 
+      - name: CreateOptDirectory
+        action: CreateFolder
+        onFailure: Ignore
+        maxAttempts: 1
+        inputs:
+          - path: /opt
+            owner: root
+            group: root
+            permissions: 0755
+            overwrite: false
+      - name: CreateBuildDirectory
+        action: CreateFolder
+        onFailure: Ignore
+        maxAttempts: 1
+        inputs:
+          - path: /build
+            owner: root
+            group: root
+            permissions: 0755
+            overwrite: false
+      - name: InstallSupportPackages
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        timeoutSeconds: 300
+        inputs:
+          commands:
+            - |
+              sudo apt-get update
+              sudo apt-get install -y \
+                build-essential \
+                wget \
+                ca-certificates
+      - name: DownloadPerlSource
+        action: WebDownload
+        onFailure: Abort
+        maxAttempts: 3
+        timeoutSeconds: 300
+        inputs:
+          - source: 'https://www.cpan.org/src/5.0/perl-{{ PerlVersion }}.tar.gz'
+            checksum: '{{ PerlChecksum }}'
+            algorithm: SHA256
+            destination: /build/perl.tar.gz
+      - name: CompilePerl
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - |
+              cd /build
+              tar xzf perl.tar.gz
+              cd "perl-{{ PerlVersion }}"
+              ./Configure -des -Dprefix=/opt/perl-"{{ PerlVersion }}"
+              make
+              make test
+              make install
+              ln -s /opt/perl-"{{ PerlVersion }}" /opt/perl
+              echo "export PERL_BIN=/opt/perl-{{ PerlVersion }}/bin" > /etc/default/perl
+      - name: InstallCpanm
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        timeoutSeconds: 120
+        inputs:
+          commands:
+            - |
+              . /etc/default/perl
+              wget -O - https://cpanmin.us 2>/dev/null | ${PERL_BIN}/perl - App::cpanminus
+              SITE_PERL=$(${PERL_BIN}/perl -V | tail | egrep 'site_perl/[0-9.]+$' | tr -d ' ')
+              echo "export PATH=${PERL_BIN}:${PATH}" >> /etc/default/perl
+              echo "export SITE_PERL=${SITE_PERL}" >> /etc/default/perl
+              echo "export RT_FIX_DEPS_CMD=${PERL_BIN}/cpanm" >> /etc/default/perl

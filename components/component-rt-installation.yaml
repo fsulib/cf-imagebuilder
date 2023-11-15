@@ -1,0 +1,123 @@
+name: 'Install RT'
+description: 'This component installs RT and a few of its extensions.'
+schemaVersion: 1.0
+parameters:
+  - RTVersion:
+      type: string
+      default: 4.4.7
+      description: 'RT release version.'
+  - RTChecksum:
+      type: string
+      default: '47af1651d5df3f25b6374ff6c1da71c66202d61919d9431c17259fa3df69ae59'
+      description: 'RT tarball SHA256 hash.'
+phases:
+  - name: build
+    steps:
+      - name: CreateOptDirectory
+        action: CreateFolder
+        onFailure: Ignore
+        maxAttempts: 1
+        inputs:
+          - path: /opt
+            owner: root
+            group: root
+            permissions: 0755
+            overwrite: false
+      - name: CreateBuildDirectory
+        action: CreateFolder
+        onFailure: Ignore
+        maxAttempts: 1
+        inputs:
+          - path: /build
+            owner: root
+            group: root
+            permissions: 0755
+            overwrite: false
+      - name: InstallSupportPackages
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        timeoutSeconds: 300
+        inputs:
+          commands:
+            - |
+              sudo apt-get update
+              sudo apt-get install -y \
+                libgnupg-perl \
+                graphviz \
+                libssl-dev \
+                libpq-dev \
+                zlib1g-dev \
+                pkg-config \
+                w3m \
+                apache2 \
+                libapache2-mod-auth-cas \
+                libgd-dev \
+                python-is-python3 \
+                postfix
+      - name: DownloadRTSource
+        action: WebDownload
+        onFailure: Abort
+        maxAttempts: 3
+        timeoutSeconds: 300
+        inputs:
+          - source: 'https://download.bestpractical.com/pub/rt/release/rt-{{ RTVersion }}.tar.gz'
+            checksum: '{{ RTChecksum }}'
+            algorithm: SHA256
+            destination: /build/rt.tar.gz
+      - name: CreateRTUser
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - |
+              adduser --system --home /opt/rt4 --group rt
+              usermod --append --groups rt www-data
+      - name: BuildRT
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - |
+              . /etc/default/perl
+              cd /build
+              tar xzf rt.tar.gz
+              cd "rt-{{ RTVersion }}"
+              ln -s /usr/share/perl5/GnuPG ${SITE_PERL}
+              ./configure \
+                --enable-graphviz \
+                --enable-gd \
+                --enable-externalauth \
+                --with-web-user=www-data \
+                --with-web-group=www-data \
+                --with-db-type=Pg \
+                --with-rt-group=rt \
+                --with-bin-owner=rt \
+                --with-libs-owner=rt
+              i=1
+              while test $i -le 5; do
+                make testdeps
+                make fixdeps
+                if test $? -gt 0; then
+                  i=$(expr $i + 1)
+                else
+                  break
+                fi
+              done
+              make install
+              cpanm RT::Authen::Token
+              cpanm RT::Extension::ExtractCustomFieldValues
+              cpanm RT::Extension::REST2
+              cpanm RT::Extension::AssetSQL
+              cpanm HTML::FormatExternal
+              cpanm App::wsgetmail
+      - name: InstallBoto3
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              pip install boto3
