@@ -53,8 +53,7 @@ phases:
                 apache2 \
                 libapache2-mod-auth-cas \
                 libgd-dev \
-                python-is-python3 \
-                postfix
+                python-is-python3
       - name: DownloadRTSource
         action: WebDownload
         onFailure: Abort
