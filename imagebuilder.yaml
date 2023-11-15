@@ -621,7 +621,7 @@ Resources:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Initial creation of component.'
-      Uri: !Sub s3://${ComponenetBucket}/${ComponentPrefix}/component-rt-installation.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-rt-installation.yaml
       Description: Installs Request Tracker.
       Name: Install Request Tracker
       Platform: Linux
