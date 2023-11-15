@@ -601,6 +601,37 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.0
 
+  UbuntuInstallPerlComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation of component.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-rt-perl-installation.yaml
+      Description: Compiles and installs perl for RT.
+      Name: Install Perl
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu RT Perl Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
+  UbuntuInstallRTComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial creation of component.'
+      Uri: !Sub s3://${ComponenetBucket}/${ComponentPrefix}/component-rt-installation.yaml
+      Description: Installs Request Tracker.
+      Name: Install Request Tracker
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu RT Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
 
   # Recipes
   
@@ -720,8 +751,42 @@ Resources:
         "lib:created-by": !Ref Creator
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
-        "lib:signalsciences": 'false'
+        "lib:signalsciences": 'true'
       Version: 2.0.0
+      AdditionalInstanceConfiguration:
+        SystemsManagerAgent:
+          UninstallAfterBuild: false
+
+  Ubuntu2004RTHostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallPerlComponent.Arn
+          Parameters:
+            - Name: PerlVersion
+              Value:
+                - 5.38.0
+        - ComponentArn: !GetAtt UbuntuInstallRTComponent.Arn
+          Parameters:
+            - Name: RTVersion
+              Value:
+                - 4.4.7
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - focal
+      Description: Patches OS, installs standard AWS tools, installs Perl, RT, and dependencies.
+      Name: RT Host Image for Ubuntu 20_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 20.04
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 1.0.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -915,6 +980,28 @@ Resources:
         "Name": Drupal9Host Ubuntu 2210 Image Distribution
         "lib:created-by": !Ref Creator
 
+  RTHostUbuntu2004Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2004 RTHost Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: RTHost-Ubuntu-2004
+              'lib:env': any
+              'lib:app': rt
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 RTHost
+            Name: RTHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: RTHost Ubuntu 2004 Image Distribution
+      Tags:
+        "Name": RTHost Ubuntu 2004 Image Distribution
+        "lib:created-by": !Ref Creator
+
   # Pipeline Configurations
 
   # TODO Automated build scheduling based on dependency updates
@@ -992,6 +1079,25 @@ Resources:
       Status: ENABLED
       Tags:
         Name: Ubuntu 2004 MatomoHost Pipeline
+        'lib:created-by': !Ref Creator
+        'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'false'
+
+  Ubuntu2004RTHostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a RTHost 2004 image.
+      DistributionConfigurationArn: !Ref RTHostUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2004RTHostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: RTHost Pipeline for Ubuntu 2004
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2004 RTHost Pipeline
         'lib:created-by': !Ref Creator
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
