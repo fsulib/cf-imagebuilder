@@ -71,7 +71,7 @@ phases:
               make test
               make install
               ln -s /opt/perl-"{{ PerlVersion }}" /opt/perl
-              echo "export PERL_BIN=/opt/perl-{{ PerlVersion }}/bin" > /etc/default/perl
+              echo "export PERL_BIN_DIR=/opt/perl-{{ PerlVersion }}/bin" > /etc/default/perl
       - name: InstallCpanm
         action: ExecuteBash
         onFailure: Abort
@@ -81,8 +81,8 @@ phases:
           commands:
             - |
               . /etc/default/perl
-              wget -O - https://cpanmin.us 2>/dev/null | ${PERL_BIN}/perl - App::cpanminus
-              SITE_PERL=$(${PERL_BIN}/perl -V | tail | egrep 'site_perl/[0-9.]+$' | tr -d ' ')
-              echo "export PATH=${PERL_BIN}:${PATH}" >> /etc/default/perl
+              wget -O - https://cpanmin.us 2>/dev/null | ${PERL_BIN_DIR}/perl - App::cpanminus
+              SITE_PERL=$(${PERL_BIN_DIR}/perl -V | tail | egrep 'site_perl/[0-9.]+$' | tr -d ' ')
+              echo "export PATH=${PERL_BIN_DIR}:${PATH}" >> /etc/default/perl
               echo "export SITE_PERL=${SITE_PERL}" >> /etc/default/perl
-              echo "export RT_FIX_DEPS_CMD=${PERL_BIN}/cpanm" >> /etc/default/perl
+              echo "export RT_FIX_DEPS_CMD=${PERL_BIN_DIR}/cpanm" >> /etc/default/perl
