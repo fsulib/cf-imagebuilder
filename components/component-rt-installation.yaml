@@ -64,7 +64,7 @@ phases:
             checksum: '{{ RTChecksum }}'
             algorithm: SHA256
             destination: /build/rt.tar.gz
-      - name: CreateRTUser
+      - name: CreateUsers
         action: ExecuteBash
         onFailure: Abort
         maxAttempts: 1
@@ -73,6 +73,7 @@ phases:
             - |
               adduser --system --home /opt/rt4 --group rt
               usermod --append --groups rt www-data
+              adduser --system --home /var/lib/wsgetmail wsgetmail
       - name: BuildRT
         action: ExecuteBash
         onFailure: Abort
