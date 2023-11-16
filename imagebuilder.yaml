@@ -604,7 +604,7 @@ Resources:
   UbuntuInstallPerlComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Initial creation of component.'
+      ChangeDescription: 'Updated PERL_BIN_DIR name.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-rt-perl-installation.yaml
       Description: Compiles and installs perl for RT.
       Name: Install Perl
@@ -615,7 +615,7 @@ Resources:
         'Name': 'Ubuntu RT Perl Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.0.1
 
   UbuntuInstallRTComponent:
     Type: AWS::ImageBuilder::Component
