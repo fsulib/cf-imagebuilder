@@ -50,6 +50,7 @@ phases:
                 zlib1g-dev \
                 pkg-config \
                 w3m \
+                postgresql-client \
                 apache2 \
                 libapache2-mod-auth-cas \
                 libgd-dev \
