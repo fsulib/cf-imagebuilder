@@ -122,3 +122,11 @@ phases:
           commands:
             - |
               pip install boto3
+      - name: InstallPostfix
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              DEBIAN_FRONTEND=noninteractive apt-get install -y postfix
