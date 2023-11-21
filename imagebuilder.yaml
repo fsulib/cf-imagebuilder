@@ -620,7 +620,7 @@ Resources:
   UbuntuInstallRTComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Included postfix.'
+      ChangeDescription: 'Included mod_fcgid.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-rt-installation.yaml
       Description: Installs Request Tracker.
       Name: Install Request Tracker
@@ -631,7 +631,7 @@ Resources:
         'Name': 'Ubuntu RT Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.5
+      Version: 1.0.6
 
   # Recipes
   
@@ -786,7 +786,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.5
+      Version: 1.0.6
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false

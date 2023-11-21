@@ -53,6 +53,7 @@ phases:
                 postgresql-client \
                 apache2 \
                 libapache2-mod-auth-cas \
+                libapache2-mod-fcgid \
                 libgd-dev \
                 python-is-python3
       - name: DownloadRTSource
