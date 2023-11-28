@@ -131,3 +131,11 @@ phases:
           commands:
             - |
               DEBIAN_FRONTEND=noninteractive apt-get install -y postfix
+      - name: RemoveBuildDirectory
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              rm -rf /build
