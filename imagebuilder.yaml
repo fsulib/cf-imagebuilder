@@ -508,7 +508,7 @@ Resources:
   UbuntuInstallMatomoComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Updated to Matomo 4.15.1'
+      ChangeDescription: 'Updated to Matomo 4.16.0'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-matomo-installation.yaml
       Description: Installs Matomo's dependencies, downloads Matomo, and expands the archive.
       Name: Install Matomo
@@ -519,7 +519,7 @@ Resources:
         'Name': 'Ubuntu Matomo Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.2.1
+      Version: 1.3.0
 
   UbuntuInstallAnsibleComponent:
     Type: AWS::ImageBuilder::Component
@@ -722,7 +722,7 @@ Resources:
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallMatomoComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Matomo 4.14.2, installs Signal Sciences.
+      Description: Patches OS, installs standard AWS tools, installs Matomo 4.16.0, installs Signal Sciences.
       Name: Matomo Host Image for Ubuntu 20_04
       ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
       Tags:
@@ -730,7 +730,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.0.0
+      Version: 4.1.0
 
   Ubuntu2210Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
