@@ -681,7 +681,7 @@ Resources:
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
           Parameters:
             - Name: RepoName
@@ -700,7 +700,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 1.1.0
+      Version: 1.2.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -724,7 +724,7 @@ Resources:
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Signal Sciences.
       Name: Standard Image for Ubuntu 22_04
@@ -734,7 +734,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.0
+      Version: 1.2.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
