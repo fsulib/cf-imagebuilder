@@ -4,7 +4,7 @@ schemaVersion: 1.0
 parameters:
   - ComposerInstallerChecksum:
       type: string
-      default: 203196aedb1a3b0f563363796bbf6f647a4f8c2419bc1dfc5aa45adc1725025d
+      default: '203196aedb1a3b0f563363796bbf6f647a4f8c2419bc1dfc5aa45adc1725025d'
       description: sha256 checksum of current composer installation script
   - ComposerVersion:
       type: string
@@ -47,10 +47,10 @@ phases:
         onFailure: Abort
         maxAttempts: 3
         inputs:
-          source: https://getcomposer.org/installer
-          destination: /root/composer-setup.php
-          checksum: {{ ComposerInstallerChecksum }}
-          algorithm: SHA256
+          - source: https://getcomposer.org/installer
+            destination: /root/composer-setup.php
+            checksum: '{{ ComposerInstallerChecksum }}'
+            algorithm: SHA256
       - name: InstallComposer
         action: ExecuteBash
         onFailure: Abort
@@ -58,8 +58,9 @@ phases:
         inputs:
           commands:
             - |
-              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root php composer-setup.php --version={{ ComposerVersion }} --filename=composer --install-dir=/usr/local/bin
+              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root php /root/composer-setup.php --version={{ ComposerVersion }} --filename=composer --install-dir=/usr/local/bin
               chmod +x /usr/local/bin/composer
-              HOME=/root /usr/local/bin/composer --no-interaction global require zaporylie/composer-drupal-optimizations
+              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root /usr/local/bin/composer global config --no-plugins allow-plugins.zaporylie/composer-drupal-optimizations true
+              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root /usr/local/bin/composer --no-interaction global require zaporylie/composer-drupal-optimizations
               mkdir -p /root/.config/composer
               rm /root/composer-setup.php
