@@ -674,7 +674,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 4.0.0
+      Version: 4.1.0
 
   Ubuntu2204DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -700,7 +700,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 1.0.0
+      Version: 1.1.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -717,7 +717,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.0.0
+      Version: 4.1.0
 
   Ubuntu2204StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -734,7 +734,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.0
+      Version: 1.1.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -752,7 +752,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.0
+      Version: 4.1.1
 
   Ubuntu2310Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -774,7 +774,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.0
+      Version: 1.1.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -799,7 +799,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.0
+      Version: 1.1.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -833,7 +833,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.7
+      Version: 1.1.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
