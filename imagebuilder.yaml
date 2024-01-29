@@ -461,6 +461,8 @@ Resources:
       Name: Install AWS Tools and Dependencies Focal
       Platform: Linux
       SupportedOsVersions:
+        - Ubuntu 23
+        - Ubuntu 22
         - Ubuntu 20
       Tags:
         'Name': 'Ubuntu AWS Tools Installation Component'
