@@ -681,7 +681,7 @@ Resources:
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
         - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
           Parameters:
             - Name: RepoName
@@ -724,7 +724,7 @@ Resources:
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Signal Sciences.
       Name: Standard Image for Ubuntu 22_04
