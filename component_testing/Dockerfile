@@ -24,6 +24,9 @@ WORKDIR /root/components
 FROM base as mantic
 CMD ["/bin/bash"]
 
+FROM base as jammy
+CMD ["/bin/bash"]
+
 FROM base as focal
 RUN adduser --disabled-password --gecos "" ubuntu
 CMD ["/bin/bash"]

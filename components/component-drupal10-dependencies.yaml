@@ -1,5 +1,5 @@
-name: 'Install Drupal9 Dependencies'
-description: "This component installs Drupal9's dependencies, including Composer."
+name: 'Install Drupal10 Dependencies'
+description: "This component installs Drupal10's dependencies, including Composter."
 schemaVersion: 1.0
 parameters:
   - ComposerInstallerChecksum:
@@ -9,11 +9,11 @@ parameters:
   - ComposerVersion:
       type: string
       default: 2.6.6
-      description: Composer Version
+      description: composer version
 phases:
   - name: build
     steps:
-      - name: InstallDrupal9Dependencies
+      - name: InstallDrupal10Dependencies
         action: ExecuteBash
         onFailure: Abort
         maxAttempts: 3
@@ -25,7 +25,6 @@ phases:
                 ghostscript \
                 libgd3 \
                 mysql-client \
-                unzip \
                 php \
                 php-cli \
                 php-common \
@@ -41,8 +40,9 @@ phases:
                 php-date \
                 php-mbstring \
                 php-intl \
+                unzip \
                 zip
-      - name: GetComposerInstaller
+      - name: GetComposer
         action: WebDownload
         onFailure: Abort
         maxAttempts: 3

@@ -115,10 +115,10 @@ Parameters:
 
   # Ubuntu 22.10 Base
 
-  Ubuntu2210BaseAmiId:
-    Description: AMI id for the base Ubuntu 22.10 image.
+  Ubuntu2310BaseAmiId:
+    Description: AMI id for the base Ubuntu 23.10 image.
     Type: AWS::EC2::Image::Id
-    Default: ami-0e0ce710d6346d076
+    Default: ami-026ad73ed895934d6
 
 Mappings:
 
@@ -441,24 +441,21 @@ Resources:
   UbuntuBaseUpdateComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Formalized version from a CF template.'
+      ChangeDescription: 'Removed OS version specifier.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-linux-update.yaml
       Description: Updates the managed base image.
-      Name: Patch Base Ubuntu Image
+      Name: Patch Base Image
       Platform: Linux
-      SupportedOsVersions:
-        - Ubuntu 20
-        - Ubuntu 18
       Tags:
         'Name': 'Ubuntu Base Update Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.1.0
 
   UbuntuInstallAwsToolsComponentFocal:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Rolling with my default homies.'
+      ChangeDescription: 'Updated supported OS versions.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-focal.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
       Name: Install AWS Tools and Dependencies Focal
@@ -469,33 +466,35 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.1.0
 
   UbuntuInstallAwsToolsComponentMantic:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Rolling with my default homies.'
+      ChangeDescription: 'Updated supported versions.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-mantic.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
       Name: Install AWS Tools and Dependencies Mantic
       Platform: Linux
       SupportedOsVersions:
+        - Ubuntu 23
         - Ubuntu 22
       Tags:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.1.0
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'New parameterized version, does not use key-add, installs docker-compose-plugin.'
+      ChangeDescription: 'Updated supported versions.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-docker-installation-2.0.yaml
       Description: Installs the Docker GPG key, repo, application, and dependencies.
       Name: Install Docker
       Platform: Linux
       SupportedOsVersions:
+        - Ubuntu 23
         - Ubuntu 22
         - Ubuntu 20
         - Ubuntu 18
@@ -503,7 +502,7 @@ Resources:
         'Name': 'Ubuntu Docker Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 2.1.0
+      Version: 2.2.0
 
   UbuntuInstallMatomoComponent:
     Type: AWS::ImageBuilder::Component
@@ -556,34 +555,56 @@ Resources:
   UbuntuInstallDrupal9DependenciesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Remove credential download.'
+      ChangeDescription: 'Updated supported versions, and refactored to use WebDownload component with checksum.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal9-dependencies.yaml
       Description: Installs Drupal 9's dependencies.
       Name: Install Drupal9 Dependencies
       Platform: Linux
       SupportedOsVersions:
+        - Ubuntu 23
+        - Ubuntu 22
         - Ubuntu 20
       Tags:
         'Name': 'Ubuntu Drupal 9 Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.1.0
+      Version: 1.2.0
+
+  UbuntuInstallDrupal10DependenciesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'New component for Drupal 10.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal10-dependencies.yaml
+      Description: Installs Drupal 10's dependencies.
+      Name: Install Drupal9 Dependencies
+      Platform: Linux
+      SupportedOsVersions:
+        - Ubuntu 23
+        - Ubuntu 22
+        - Ubuntu 20
+      Tags:
+        'Name': 'Ubuntu Drupal 10 Dependencies Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
 
   UbuntuInstallSignalSciencesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Corrected typo in condition.'
+      ChangeDescription: 'Updated supported versions.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-signal-sciences.yaml
       Description: Installs Signal Sciences repo, agent, and Apache module.
       Name: Install Signal Sciences
       Platform: Linux
       SupportedOsVersions:
+        - Ubuntu 23
+        - Ubuntu 22
         - Ubuntu 20
       Tags:
         'Name': 'Ubuntu Signal Sciences Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.3
+      Version: 1.1.0
 
   UbuntuInstallECSAgentComponent:
     Type: AWS::ImageBuilder::Component
@@ -653,49 +674,31 @@ Resources:
         "lib:signalsciences": 'true'
       Version: 4.0.0
 
-  Ubuntu2210DockerHostImageRecipe:
-    Type: AWS::ImageBuilder::ImageRecipe
-    Properties:
-      Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
-          Parameters:
-            - Name: RepoName
-              Value:
-                - lunar
-        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
-          Parameters:
-            - Name: RepoName
-              Value: 
-                - jammy
-      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs Signal Sciences.
-      Name: Docker Host Image for Ubuntu 22_10
-      ParentImage: !Ref Ubuntu2210BaseAmiId
-      Tags:
-        "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 22.10
-        "lib:dockerhost": 'true'
-        "lib:signalsciences": 'true'
-      Version: 4.0.0
-
-  Ubuntu2004ECSHostImageRecipe:
+  Ubuntu2204DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallECSAgentComponent.Arn
-      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs the ECS Agent.
-      Name: ECS Host Image for Ubuntu 20_04
-      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-20-lts-x86/x.x.x
+          Parameters:
+            - Name: RepoName
+              Value:
+                - jammy
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value: 
+                - jammy
+      Description: Patches OS, installs standard AWS tools, installs Docker-CE, installs Signal Sciences.
+      Name: Docker Host Image for Ubuntu 22_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-22-lts-x86/x.x.x
       Tags:
         "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 20.04
+        "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'true'
-        "lib:signalsciences": 'false'
-      Version: 4.0.0
+        "lib:signalsciences": 'true'
+      Version: 1.0.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -713,6 +716,23 @@ Resources:
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
       Version: 4.0.0
+
+  Ubuntu2204StandardImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+      Description: Patches OS, installs standard AWS tools, installs Signal Sciences.
+      Name: Standard Image for Ubuntu 22_04
+      ParentImage: arn:aws:imagebuilder:us-east-1:aws:image/ubuntu-server-22-lts-x86/x.x.x
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 22.04
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 1.0.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -732,7 +752,7 @@ Resources:
         "lib:signalsciences": 'true'
       Version: 4.1.0
 
-  Ubuntu2210Drupal9HostImageRecipe:
+  Ubuntu2310Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
@@ -745,14 +765,39 @@ Resources:
               Value:
                 - jammy
       Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
-      Name: Drupal9 Host Image for Ubuntu 22_10
-      ParentImage: !Ref Ubuntu2210BaseAmiId
+      Name: Drupal9 Host Image for Ubuntu 23_10
+      ParentImage: !Ref Ubuntu2310BaseAmiId
       Tags:
         "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 22.10
+        "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 2.0.1
+      Version: 1.0.0
+      AdditionalInstanceConfiguration:
+        SystemsManagerAgent:
+          UninstallAfterBuild: false
+
+  Ubuntu2310Drupal10HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal10DependenciesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - jammy
+      Description: Patches OS, installs standard AWS tools, installs Drupal10 package dependencies.
+      Name: Drupal10 Host Image for Ubuntu 23_10
+      ParentImage: !Ref Ubuntu2310BaseAmiId
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 23.10
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 1.0.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -858,38 +903,38 @@ Resources:
         "Name": DockerHost Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
-  DockerHostUbuntu2210Distribution:
+  DockerHostUbuntu2204Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
-      Description: Ubuntu 2210 DockerHost Distribution
+      Description: Ubuntu 2204 DockerHost Distribution
       Distributions:
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: DockerHost-Ubuntu-2210
+              Name: DockerHost-Ubuntu-2204
               'lib:env': any
               'lib:app': any
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2210 DockerHost
-            Name: DockerHost-Ubuntu-2210_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2204 DockerHost
+            Name: DockerHost-Ubuntu-2204_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: us-east-2
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: DockerHost-Ubuntu-2210
+              Name: DockerHost-Ubuntu-2204
               'lib:env': any
               'lib:app': any
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2210 DockerHost
-            Name: DockerHost-Ubuntu-2210_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2204 DockerHost
+            Name: DockerHost-Ubuntu-2204_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
-      Name: DockerHost Ubuntu 2210 Image Distribution
+      Name: DockerHost Ubuntu 2204 Image Distribution
       Tags:
-        "Name": DockerHost Ubuntu 2210 Image Distribution
+        "Name": DockerHost Ubuntu 2204 Image Distribution
         "lib:created-by": !Ref Creator
 
   StandardUbuntu2004Distribution:
@@ -914,26 +959,26 @@ Resources:
         "Name": Standard Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
-  ECSHostUbuntu2004Distribution:
+  StandardUbuntu2204Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
-      Description: Ubuntu 2004 ECSHost Distribution
+      Description: Ubuntu 2204 Standard Distribution
       Distributions:
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: ECSHost-Ubuntu-2004
+              Name: Standard-Ubuntu-2204
               'lib:env': any
               'lib:app': any
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2004 ECSHost
-            Name: ECSHost-Ubuntu-2004_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2204 Standard
+            Name: Standard-Ubuntu-2204_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
-      Name: ECSHost Ubuntu 2004 Image Distribution
+      Name: Standard Ubuntu 2204 Image Distribution
       Tags:
-        "Name": ECSHost Ubuntu 2004 Image Distribution
+        "Name": Standard Ubuntu 2204 Image Distribution
         "lib:created-by": !Ref Creator
 
   MatomoHostUbuntu2004Distribution:
@@ -958,26 +1003,48 @@ Resources:
         "Name": MatomoHost Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
-  Drupal9HostUbuntu2210Distribution:
+  Drupal9HostUbuntu2310Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
-      Description: Ubuntu 2210 Drupal9Host Distribution
+      Description: Ubuntu 2310 Drupal9Host Distribution
       Distributions:
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: Drupal9Host-Ubuntu-2210
+              Name: Drupal9Host-Ubuntu-2310
               'lib:env': any
               'lib:app': drupal9
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2210 Drupal9Host
-            Name: Drupal9Host-Ubuntu-2210_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2310 Drupal9Host
+            Name: Drupal9Host-Ubuntu-2310_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
-      Name: Drupal9Host Ubuntu 2210 Image Distribution
+      Name: Drupal9Host Ubuntu 2310 Image Distribution
       Tags:
-        "Name": Drupal9Host Ubuntu 2210 Image Distribution
+        "Name": Drupal9Host Ubuntu 2310 Image Distribution
+        "lib:created-by": !Ref Creator
+
+  Drupal10HostUbuntu2310Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2310 Drupal9Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal10Host-Ubuntu-2310
+              'lib:env': any
+              'lib:app': drupal10
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2310 Drupal10Host
+            Name: Drupal10Host-Ubuntu-2310_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+      Name: Drupal10Host Ubuntu 2310 Image Distribution
+      Tags:
+        "Name": Drupal10Host Ubuntu 2310 Image Distribution
         "lib:created-by": !Ref Creator
 
   RTHostUbuntu2004Distribution:
@@ -1026,23 +1093,23 @@ Resources:
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'true'
     
-  Ubuntu2004ECSHostPipeline:
+  Ubuntu2204DockerHostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a ECS Host 2004 image
-      DistributionConfigurationArn: !Ref ECSHostUbuntu2004Distribution
+      Description: Builds and distributes a DockerHost 2204 image
+      DistributionConfigurationArn: !Ref DockerHostUbuntu2204Distribution
       EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu2004ECSHostImageRecipe
+      ImageRecipeArn: !Ref Ubuntu2204DockerHostImageRecipe
       ImageTestsConfiguration:
         ImageTestsEnabled: true
         TimeoutMinutes: !Ref ImageTestsTimeout
       InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: ECSHost Pipeline for Ubuntu 2004
+      Name: DockerHost Pipeline for Ubuntu 2204
       Status: ENABLED
       Tags:
-        Name: Ubuntu 2004 ECSHost Pipeline
+        Name: Ubuntu 2204 DockerHost Pipeline
         'lib:created-by': mshackelford
-        'lib:distribution': Ubuntu2004
+        'lib:distribution': Ubuntu2204
         'lib:dockerhost': 'true'
     
   Ubuntu2004StandardPipeline:
@@ -1062,6 +1129,25 @@ Resources:
         Name: Ubuntu 2004 Standard Pipeline
         'lib:created-by': mshackelford
         'lib:distribution': Ubuntu2004
+        'lib:dockerhost': 'false'
+
+  Ubuntu2204StandardPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Standard 2204 image
+      DistributionConfigurationArn: !Ref StandardUbuntu2004Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2204StandardImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Standard Pipeline for Ubuntu 2204
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2204 Standard Pipeline
+        'lib:created-by': mshackelford
+        'lib:distribution': Ubuntu2204
         'lib:dockerhost': 'false'
 
   Ubuntu2004MatomoHostPipeline:
@@ -1102,42 +1188,42 @@ Resources:
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
 
-  Ubuntu2210Drupal9HostPipeline:
+  Ubuntu2310Drupal9HostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a Drupal9Host 2210 image.
-      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2210Distribution
+      Description: Builds and distributes a Drupal9Host 2310 image.
+      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2310Distribution
       EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu2210Drupal9HostImageRecipe
+      ImageRecipeArn: !Ref Ubuntu2310Drupal9HostImageRecipe
       ImageTestsConfiguration:
         ImageTestsEnabled: true
         TimeoutMinutes: !Ref ImageTestsTimeout
       InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: Drupal9Host Pipeline for Ubuntu 2210
+      Name: Drupal9Host Pipeline for Ubuntu 2310
       Status: ENABLED
       Tags:
-        Name: Ubuntu 2210 Drupal9Host Pipeline
+        Name: Ubuntu 2310 Drupal9Host Pipeline
         'lib:created-by': !Ref Creator
-        'lib:distribution': Ubuntu2210
+        'lib:distribution': Ubuntu2310
         'lib:dockerhost': false
 
-  Ubuntu2210DockerHostPipeline:
+  Ubuntu2310Drupal10HostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a DockerHost 2210 image.
-      DistributionConfigurationArn: !Ref DockerHostUbuntu2210Distribution
+      Description: Builds and distributes a Drupal10Host 2310 image.
+      DistributionConfigurationArn: !Ref Drupal10HostUbuntu2310Distribution
       EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu2210DockerHostImageRecipe
+      ImageRecipeArn: !Ref Ubuntu2310Drupal10HostImageRecipe
       ImageTestsConfiguration:
         ImageTestsEnabled: true
         TimeoutMinutes: !Ref ImageTestsTimeout
       InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: DockerHost Pipeline for Ubuntu 2210
+      Name: Drupal10Host Pipeline for Ubuntu 2310
       Status: ENABLED
       Tags:
-        Name: Ubuntu 2210 DockerHost Pipeline
+        Name: Ubuntu 2310 Drupal10Host Pipeline
         'lib:created-by': !Ref Creator
-        'lib:distribution': Ubuntu2210
+        'lib:distribution': Ubuntu2310
         'lib:dockerhost': false
 
 # vim: set fdm=indent:
