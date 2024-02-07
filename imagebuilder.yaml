@@ -743,6 +743,13 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallMatomoComponent.Arn
+          Parameters:
+            - Name: MatomoUrl
+              Value:
+                - http://builds.matomo.org/matomo-4.16.1.zip
+            - Name: MatomoChecksum
+              Value:
+                - 19aa3636794f07535ede84991d8b8287ddf378be160c204c98ba4465f87223eb
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Matomo 4.16.0, installs Signal Sciences.
       Name: Matomo Host Image for Ubuntu 20_04
@@ -752,7 +759,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.1
+      Version: 4.1.2
 
   Ubuntu2310Drupal9HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
