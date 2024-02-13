@@ -974,7 +974,7 @@ Resources:
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
-          Region: !Ref AWS::Region
+          Region: !Ref us-east-2
       Name: Standard Ubuntu 2004 Image Distribution
       Tags:
         "Name": Standard Ubuntu 2004 Image Distribution
@@ -997,6 +997,18 @@ Resources:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Standard-Ubuntu-2204
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2204 Standard
+            Name: Standard-Ubuntu-2204_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: us-east-2
       Name: Standard Ubuntu 2204 Image Distribution
       Tags:
         "Name": Standard Ubuntu 2204 Image Distribution
