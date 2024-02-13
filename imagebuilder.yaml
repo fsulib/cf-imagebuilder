@@ -773,6 +773,9 @@ Resources:
             - Name: RepoName
               Value:
                 - jammy
+            - Name: ComposerInstallerChecksum
+              Value:
+                - edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155
       Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
       Name: Drupal9 Host Image for Ubuntu 23_10
       ParentImage: !Ref Ubuntu2310BaseAmiId
@@ -781,7 +784,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.0
+      Version: 1.1.1
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -798,6 +801,9 @@ Resources:
             - Name: RepoName
               Value:
                 - jammy
+            - Name: ComposerInstallerChecksum
+              Value:
+                - edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155
       Description: Patches OS, installs standard AWS tools, installs Drupal10 package dependencies.
       Name: Drupal10 Host Image for Ubuntu 23_10
       ParentImage: !Ref Ubuntu2310BaseAmiId
@@ -806,7 +812,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.0
+      Version: 1.1.1
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
