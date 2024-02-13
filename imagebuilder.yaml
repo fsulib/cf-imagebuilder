@@ -768,6 +768,7 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
+          Parameters:
             - Name: ComposerInstallerChecksum
               Value:
                 - edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155
@@ -796,6 +797,7 @@ Resources:
         - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal10DependenciesComponent.Arn
+          Parameters:
             - Name: ComposerInstallerChecksum
               Value:
                 - edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155
