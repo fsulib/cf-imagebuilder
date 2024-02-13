@@ -974,7 +974,7 @@ Resources:
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
-          Region: !Ref us-east-2
+          Region: us-east-2
       Name: Standard Ubuntu 2004 Image Distribution
       Tags:
         "Name": Standard Ubuntu 2004 Image Distribution
