@@ -963,6 +963,18 @@ Resources:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Standard-Ubuntu-2004
+              'lib:env': any
+              'lib:app': any
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2004 Standard
+            Name: Standard-Ubuntu-2004_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
       Name: Standard Ubuntu 2004 Image Distribution
       Tags:
         "Name": Standard Ubuntu 2004 Image Distribution
@@ -1029,6 +1041,18 @@ Resources:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal9Host-Ubuntu-2310
+              'lib:env': any
+              'lib:app': drupal9
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2310 Drupal9Host
+            Name: Drupal9Host-Ubuntu-2310_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: us-east-2
       Name: Drupal9Host Ubuntu 2310 Image Distribution
       Tags:
         "Name": Drupal9Host Ubuntu 2310 Image Distribution
@@ -1051,6 +1075,18 @@ Resources:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal10Host-Ubuntu-2310
+              'lib:env': any
+              'lib:app': drupal10
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2310 Drupal10Host
+            Name: Drupal10Host-Ubuntu-2310_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: us-east-2
       Name: Drupal10Host Ubuntu 2310 Image Distribution
       Tags:
         "Name": Drupal10Host Ubuntu 2310 Image Distribution
