@@ -790,7 +790,7 @@ Resources:
         SystemsManagerAgent:
           UninstallAfterBuild: false
 
-  Ubuntu2310Drupal10HostImageRecie:
+  Ubuntu2310Drupal10HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
