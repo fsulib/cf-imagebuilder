@@ -771,7 +771,7 @@ Resources:
           Parameters:
             - Name: ComposerInstallerChecksum
               Value:
-                - edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155
+                - 95676541502ab5084ca5ea179059a8013a2755167a9d375feae97f333c002ecc  
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
           Parameters:
             - Name: RepoName
@@ -785,12 +785,12 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.1
+      Version: 1.1.2
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
 
-  Ubuntu2310Drupal10HostImageRecipe:
+  Ubuntu2310Drupal10HostImageRecie:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
@@ -800,7 +800,7 @@ Resources:
           Parameters:
             - Name: ComposerInstallerChecksum
               Value:
-                - edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155
+                - 95676541502ab5084ca5ea179059a8013a2755167a9d375feae97f333c002ecc
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
           Parameters:
             - Name: RepoName
@@ -814,7 +814,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.1
+      Version: 1.1.2
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
