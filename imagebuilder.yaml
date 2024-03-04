@@ -1200,7 +1200,7 @@ Resources:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
       Description: Builds and distributes a Standard 2204 image
-      DistributionConfigurationArn: !Ref StandardUbuntu2004Distribution
+      DistributionConfigurationArn: !Ref StandardUbuntu2204Distribution
       EnhancedImageMetadataEnabled: true
       ImageRecipeArn: !Ref Ubuntu2204StandardImageRecipe
       ImageTestsConfiguration:
