@@ -1,0 +1,92 @@
+name: 'Install Signal Sciences WAF'
+description: 'This component installs the Fast.ly/SigSci repo, agent, and Apache module.'
+schemaVersion: 1.0
+parameters:
+  - CCID:
+      type: string
+      default: ''
+      description: 'Checksummed Customer Id'
+  - GroupingTags:
+      type: string
+      default: 'Library,LibraryWS'
+      description: 'Comma-separated list of Grouping Tags'
+  - PackageBucket:
+      type: string
+      default: ''
+      description: 'Package bucket.'
+  - PackageKey:
+      type: string
+      default: ''
+      description: 'Package key.'
+  - PackageHash:
+      type: string
+      default: ''
+      description: 'Package sha 256 hash'
+
+phases:
+  - name: build
+    steps:
+      - name: GetPackage
+        action: S3Download
+        onFailure: Abort
+        maxAttempts: 3
+        timeoutSeconds: 10
+        inputs:
+          - source: '{{ PackageBucket }}/{{ PackageKey }}'
+            checksum: '{{ KeyChecksum }}'
+            algorithm: SHA256
+            destination: '{{ KeyFile }}'
+      - name: CreateKeyingDirectory
+        action: CreateFolder
+        onFailure: Ignore
+        maxAttempts: 1
+        inputs:
+          - path: '{{ KeyRing }}'
+            owner: root
+            group: root
+            permissions: '0755'
+            overwrite: false
+      - name: ConfigureKey
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - |
+              if $(file '{{ build.DownloadKey.inputs[0].destination }}' | grep -q 'PGP public key block Public-Key (old)'); then
+                cat '{{ build.DownloadKey.inputs[0].destination }}' | gpg --dearmor > '{{ KeyRing }}/{{ KeyFile }}'
+              else
+                gpg_conversion=$(mktemp)
+                gpg --no-default-keyring --keyring ${gpg_conversion} --import '{{ build.DownloadKey.inputs[0].destination }}'
+                gpg --no-default-keyring --keyring ${gpg_conversion} --export --output '{{ KeyRing }}/{{ KeyFile }}'
+                rm ${gpg_conversion}
+              fi
+      - name: ConfigureSourcesList
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - echo 'deb [signed-by={{ KeyRing }}/{{ KeyFile }}] {{ RepoUrl }} {{ RepoName }} {{ RepoBranch }}' > '/etc/apt/sources.list.d/{{ SourcesListName }}'
+      - name: UpdateRepos
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          commands:
+            - apt-get update
+      - name: InstallPackage
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands: 
+            - apt-get install sigsci-agent
+      - name: InstallAgent
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - apt-get install sigsci-module-apache
+
