@@ -1,0 +1,24 @@
+name: 'Old Releases'
+description: 'Changes the repositories to the old-releases for the CODENAME release of Ubuntu.'
+schemaVersion: 1.0
+parameters:
+  - CODENAME:
+      type: string
+      default: kinetic
+      description: 'Ubuntu release code nae.'
+phases:
+  - name: build
+    steps:
+      - name: ReplaceSourcesTemplate
+        action: CreateFile
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          - path: /etc/cloud/templates/sources.list.ubuntu.tmpl
+            content: |
+              deb http://old-releases.ubuntu.com/ubuntu/ {{ CODENAME }} main restricted universe multiverse
+              deb http://old-releases.ubuntu.com/ubuntu/ {{ CODENAME }}-updates main restricted universe multiverse
+              deb http://old-releases.ubuntu.com/ubuntu/ {{ CODENAME }}-security main restricted universe multiverse
+            owner: root
+            group: root
+            permissions: 0644
