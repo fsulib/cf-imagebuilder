@@ -455,7 +455,7 @@ Resources:
         'Name': 'Ubuntu Use Old Releases Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.1
+      Version: 1.0.2
 
   UbuntuBaseUpdateComponent:
     Type: AWS::ImageBuilder::Component
@@ -706,7 +706,7 @@ Resources:
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.2
+      Version: 1.0.3
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false

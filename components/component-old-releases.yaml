@@ -9,16 +9,6 @@ parameters:
 phases:
   - name: build
     steps:
-      - name: UpdateSourcesList
-        action: ExecuteBash
-        onFailure: Abort
-        maxAttempts: 1
-        inputs:
-          commands:
-            - |
-              sudo sed -i -e 's/archive/old-releases/g' \
-                -e 's/security/old-releases/g' \
-                /etc/apt/sources.list
       - name: ReplaceSourcesTemplate
         action: CreateFile
         onFailure: Abort
