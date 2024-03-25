@@ -10,7 +10,7 @@ phases:
   - name: build
     steps:
       - name: UpdateSourcesList
-        action: ExecuteBacsh
+        action: ExecuteBash
         onFailure: Abort
         maxAttempts: 1
         inputs:
