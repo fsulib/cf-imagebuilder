@@ -113,7 +113,12 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /org/arn
 
-  # Ubuntu 22.10 Base
+  # Nonstandard Base Images
+
+  Ubuntu2210BaseAmiId:
+    Description: AMI id for the base Ubuntu 22.10 image.
+    Type: AWS::EC2::Image::Id
+    Default: ami-0638741e0c9aabde6
 
   Ubuntu2310BaseAmiId:
     Description: AMI id for the base Ubuntu 23.10 image.
@@ -438,6 +443,20 @@ Resources:
 
   # Components
 
+  UbuntuOldReleasesComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Introduction'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-old-releases.yaml
+      Description: Writes a sources.list containing the old-releases url.
+      Name: Use Old Releases
+      Platform: Linux
+      Tags:
+        'Name': 'Ubuntu Use Old Releases Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
   UbuntuBaseUpdateComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
@@ -658,6 +677,41 @@ Resources:
 
   # Recipes
   
+  Ubuntu2210Drupal10HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !GetAtt UbuntuOldReleasesComponent.Arn
+          Parameters:
+            - Name: CODENAME
+              Value:
+                - kinetic
+        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
+        - ComponentArn: !GetAtt UbuntuInstallDrupal10DependenciesComponent.Arn
+          Parameters:
+            - Name: ComposerInstallerChecksum
+              Value:
+                - 8586e7c8ce2839946a253a9ca3284e525245c1f82d8bd1e221cef88a59d00a75
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - jammy
+      Description: Points at old releases, patches OS, installs standard AWS tools, installs Drupal10 package dependencies.
+      Name: Drupal10 Host Image for Ubuntu 22_10
+      ParentImage: !Ref Ubuntu2210BaseAmiId
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 22.10
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+      Version: 1.0.0
+      AdditionalInstanceConfiguration:
+        SystemsManagerAgent:
+          UninstallAfterBuild: false
+
+
   Ubuntu2004DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
@@ -761,35 +815,6 @@ Resources:
         "lib:signalsciences": 'true'
       Version: 4.1.3
 
-  Ubuntu2310Drupal9HostImageRecipe:
-    Type: AWS::ImageBuilder::ImageRecipe
-    Properties:
-      Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
-        - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
-        - ComponentArn: !GetAtt UbuntuInstallDrupal9DependenciesComponent.Arn
-          Parameters:
-            - Name: ComposerInstallerChecksum
-              Value:
-                - 95676541502ab5084ca5ea179059a8013a2755167a9d375feae97f333c002ecc  
-        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
-          Parameters:
-            - Name: RepoName
-              Value:
-                - jammy
-      Description: Patches OS, installs standard AWS tools, installs Drupal9 package dependencies.
-      Name: Drupal9 Host Image for Ubuntu 23_10
-      ParentImage: !Ref Ubuntu2310BaseAmiId
-      Tags:
-        "lib:created-by": !Ref Creator
-        "lib:distribution": Ubuntu 23.10
-        "lib:dockerhost": 'false'
-        "lib:signalsciences": 'true'
-      Version: 1.1.2
-      AdditionalInstanceConfiguration:
-        SystemsManagerAgent:
-          UninstallAfterBuild: false
-
   Ubuntu2310Drupal10HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
@@ -800,7 +825,7 @@ Resources:
           Parameters:
             - Name: ComposerInstallerChecksum
               Value:
-                - 95676541502ab5084ca5ea179059a8013a2755167a9d375feae97f333c002ecc
+                - 8586e7c8ce2839946a253a9ca3284e525245c1f82d8bd1e221cef88a59d00a75
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
           Parameters:
             - Name: RepoName
@@ -814,7 +839,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.2
+      Version: 1.1.3
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -1044,44 +1069,44 @@ Resources:
         "Name": MatomoHost Ubuntu 2004 Image Distribution
         "lib:created-by": !Ref Creator
 
-  Drupal9HostUbuntu2310Distribution:
+  Drupal10HostUbuntu2210Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
-      Description: Ubuntu 2310 Drupal9Host Distribution
+      Description: Ubuntu 2210 Drupal10Host Distribution
       Distributions:
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: Drupal9Host-Ubuntu-2310
+              Name: Drupal10Host-Ubuntu-2210
               'lib:env': any
-              'lib:app': drupal9
+              'lib:app': drupal10
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2310 Drupal9Host
-            Name: Drupal9Host-Ubuntu-2310_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2210 Drupal10Host
+            Name: Drupal10Host-Ubuntu-2210_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: !Ref AWS::Region
         - AmiDistributionConfiguration:
             AmiTags:
-              Name: Drupal9Host-Ubuntu-2310
+              Name: Drupal10Host-Ubuntu-2210
               'lib:env': any
-              'lib:app': drupal9
+              'lib:app': drupal10
               'lib:build-version': build-{{imagebuilder:buildVersion}}
-            Description: Ubuntu 2310 Drupal9Host
-            Name: Drupal9Host-Ubuntu-2310_{{imagebuilder:buildDate}}
+            Description: Ubuntu 2210 Drupal10Host
+            Name: Drupal10Host-Ubuntu-2210_{{imagebuilder:buildDate}}
             LaunchPermissionConfiguration:
               OrganizationArns:
                 - !Ref OrganizationArn
           Region: us-east-2
-      Name: Drupal9Host Ubuntu 2310 Image Distribution
+      Name: Drupal10Host Ubuntu 2210 Image Distribution
       Tags:
-        "Name": Drupal9Host Ubuntu 2310 Image Distribution
+        "Name": Drupal10Host Ubuntu 2210 Image Distribution
         "lib:created-by": !Ref Creator
 
   Drupal10HostUbuntu2310Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
-      Description: Ubuntu 2310 Drupal9Host Distribution
+      Description: Ubuntu 2310 Drupal10Host Distribution
       Distributions:
         - AmiDistributionConfiguration:
             AmiTags:
@@ -1253,23 +1278,23 @@ Resources:
         'lib:distribution': Ubuntu2004
         'lib:dockerhost': 'false'
 
-  Ubuntu2310Drupal9HostPipeline:
+  Ubuntu2210Drupal10HostPipeline:
     Type: AWS::ImageBuilder::ImagePipeline
     Properties:
-      Description: Builds and distributes a Drupal9Host 2310 image.
-      DistributionConfigurationArn: !Ref Drupal9HostUbuntu2310Distribution
+      Description: Builds and distributes a Drupal10Host 2210 image.
+      DistributionConfigurationArn: !Ref Drupal10HostUbuntu2210Distribution
       EnhancedImageMetadataEnabled: true
-      ImageRecipeArn: !Ref Ubuntu2310Drupal9HostImageRecipe
+      ImageRecipeArn: !Ref Ubuntu2210Drupal10HostImageRecipe
       ImageTestsConfiguration:
         ImageTestsEnabled: true
         TimeoutMinutes: !Ref ImageTestsTimeout
       InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
-      Name: Drupal9Host Pipeline for Ubuntu 2310
+      Name: Drupal10Host Pipeline for Ubuntu 2210
       Status: ENABLED
       Tags:
-        Name: Ubuntu 2310 Drupal9Host Pipeline
+        Name: Ubuntu 2210 Drupal10Host Pipeline
         'lib:created-by': !Ref Creator
-        'lib:distribution': Ubuntu2310
+        'lib:distribution': Ubuntu2210
         'lib:dockerhost': false
 
   Ubuntu2310Drupal10HostPipeline:
