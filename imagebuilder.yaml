@@ -455,7 +455,7 @@ Resources:
         'Name': 'Ubuntu Use Old Releases Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.0.1
 
   UbuntuBaseUpdateComponent:
     Type: AWS::ImageBuilder::Component
@@ -487,7 +487,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.1.0
+      Version: 1.1.1
 
   UbuntuInstallAwsToolsComponentMantic:
     Type: AWS::ImageBuilder::Component
@@ -504,7 +504,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.1.0
+      Version: 1.1.1
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -706,7 +706,7 @@ Resources:
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.0
+      Version: 1.0.2
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -728,7 +728,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 4.1.0
+      Version: 4.1.1
 
   Ubuntu2204DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -754,7 +754,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 1.2.0
+      Version: 1.2.1
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -771,7 +771,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.0
+      Version: 4.1.1
 
   Ubuntu2204StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -788,7 +788,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.2.0
+      Version: 1.2.1
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -813,7 +813,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.3
+      Version: 4.1.4
 
   Ubuntu2310Drupal10HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -839,7 +839,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.3
+      Version: 1.1.4
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -873,7 +873,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.0
+      Version: 1.1.1
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false

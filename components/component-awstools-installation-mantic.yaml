@@ -96,7 +96,7 @@ phases:
             - sudo pip install --break-system-packages '{{ CfnScripts }}' 
       - name: BuildInstallEfsUtilsDebPkg
         action: ExecuteBash
-        onFailure: Abort
+        onFailure: Ignore
         maxAttempts: 3
         inputs:
           commands:

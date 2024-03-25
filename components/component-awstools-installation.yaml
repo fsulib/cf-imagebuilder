@@ -98,7 +98,7 @@ phases:
             - sudo pip3 install '{{ CfnScripts }}' 
       - name: BuildInstallEfsUtilsDebPkg
         action: ExecuteBash
-        onFailure: Abort
+        onFailure: Ignore
         maxAttempts: 3
         inputs:
           commands:
