@@ -9,6 +9,15 @@ parameters:
 phases:
   - name: build
     steps:
+      - name: SubOldReleases
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 1
+        inputs:
+          - commands: |
+              sed -i -e 's/us-east-1\.ec2\.archive/old-releases/g' \
+                -e 's/security\./old-releases\./g' \
+                /etc/apt/sources.list
       - name: ReplaceSourcesTemplate
         action: CreateFile
         onFailure: Abort
