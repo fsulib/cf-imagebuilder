@@ -11,7 +11,7 @@ phases:
     steps:
       - name: UpdateSourcesList
         action: ExecuteBacsh
-        onFailur: Abort
+        onFailure: Abort
         maxAttempts: 1
         inputs:
           commands:
