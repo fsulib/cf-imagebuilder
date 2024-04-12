@@ -474,25 +474,23 @@ Resources:
   UbuntuInstallAwsToolsComponentFocal:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Updated supported OS versions.'
+      ChangeDescription: 'Includes needrestart utility.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-focal.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
       Name: Install AWS Tools and Dependencies Focal
       Platform: Linux
       SupportedOsVersions:
-        - Ubuntu 23
-        - Ubuntu 22
         - Ubuntu 20
       Tags:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.1.1
+      Version: 1.2.0
 
   UbuntuInstallAwsToolsComponentMantic:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Updated supported versions.'
+      ChangeDescription: 'Includes needrestart utility.'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-awstools-installation-mantic.yaml
       Description: Installs jq, awscli, CloudWatch Atent, EFS Mount Helper, and the CloudFormation helper scripts.
       Name: Install AWS Tools and Dependencies Mantic
@@ -504,7 +502,7 @@ Resources:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.1.1
+      Version: 1.2.0
 
   UbuntuInstallDockerComponent:
     Type: AWS::ImageBuilder::Component
@@ -576,7 +574,7 @@ Resources:
   UbuntuInstallDrupal9DependenciesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'Updated supported versions, and refactored to use WebDownload component with checksum.'
+      ChangeDescription: 'YAFCU'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal9-dependencies.yaml
       Description: Installs Drupal 9's dependencies.
       Name: Install Drupal9 Dependencies
@@ -589,12 +587,12 @@ Resources:
         'Name': 'Ubuntu Drupal 9 Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.2.0
+      Version: 1.2.1
 
   UbuntuInstallDrupal10DependenciesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
-      ChangeDescription: 'New component for Drupal 10.'
+      ChangeDescription: 'YAFCU'
       Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-drupal10-dependencies.yaml
       Description: Installs Drupal 10's dependencies.
       Name: Install Drupal9 Dependencies
@@ -607,7 +605,7 @@ Resources:
         'Name': 'Ubuntu Drupal 10 Dependencies Installation Component'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.0
+      Version: 1.0.1
 
   UbuntuInstallSignalSciencesComponent:
     Type: AWS::ImageBuilder::Component
@@ -706,7 +704,7 @@ Resources:
         "lib:distribution": Ubuntu 22.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.0.4
+      Version: 1.0.5
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -728,7 +726,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 4.1.1
+      Version: 4.1.2
 
   Ubuntu2204DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -754,7 +752,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 1.2.1
+      Version: 1.2.2
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -771,7 +769,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.1
+      Version: 4.1.2
 
   Ubuntu2204StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -788,7 +786,7 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.2.1
+      Version: 1.2.2
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -813,7 +811,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.4
+      Version: 4.1.5
 
   Ubuntu2310Drupal10HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -839,7 +837,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.4
+      Version: 1.1.5
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -873,7 +871,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.1
+      Version: 1.1.2
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false

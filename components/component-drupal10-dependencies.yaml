@@ -4,7 +4,7 @@ schemaVersion: 1.0
 parameters:
   - ComposerInstallerChecksum:
       type: string
-      default: '203196aedb1a3b0f563363796bbf6f647a4f8c2419bc1dfc5aa45adc1725025d'
+      default: '8586e7c8ce2839946a253a9ca3284e525245c1f82d8bd1e221cef88a59d00a75'
       description: sha256 checksum of current composer installation script
   - ComposerVersion:
       type: string
