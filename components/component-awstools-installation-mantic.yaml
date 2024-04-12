@@ -36,7 +36,8 @@ phases:
                 unzip \
                 binutils \
                 jq \
-                zip
+                zip \
+                needrestart
       - name: DownloadTools
         action: WebDownload
         onFailure: Abort
