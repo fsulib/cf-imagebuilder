@@ -481,6 +481,8 @@ Resources:
       Platform: Linux
       SupportedOsVersions:
         - Ubuntu 20
+        - Ubuntu 22
+        - Ubuntu 23
       Tags:
         'Name': 'Ubuntu AWS Tools Installation Component'
         'lib:distribution': 'Ubuntu'
