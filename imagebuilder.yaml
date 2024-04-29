@@ -125,6 +125,21 @@ Parameters:
     Type: AWS::EC2::Image::Id
     Default: ami-026ad73ed895934d6
 
+  # Component Parameter Values
+
+  ComposerChecksum:
+    Description: This hour's Composer installer sha256 checksum.
+    Type: String
+
+  MatomoUrl:
+    Description: Matomo zip download url.
+    Type: String
+    Default: https://builds.matomo.org/matomo-4.16.1.zip
+
+  MatomoChecksum:
+    Description: This quarter's Matomo zip sha256 checksum.
+    Type: String
+
 Mappings:
 
   Environments:
@@ -706,7 +721,7 @@ Resources:
           Parameters:
             - Name: ComposerInstallerChecksum
               Value:
-                - 8586e7c8ce2839946a253a9ca3284e525245c1f82d8bd1e221cef88a59d00a75
+                - !Ref ComposerChecksum
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
           Parameters:
             - Name: RepoName
@@ -730,7 +745,7 @@ Resources:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuBaseUpgradeComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
@@ -742,13 +757,13 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 4.1.2
+      Version: 5.0.0
 
   Ubuntu2204DockerHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuBaseUpgradeComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallDockerComponent.Arn
           Parameters:
@@ -768,13 +783,13 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'true'
         "lib:signalsciences": 'true'
-      Version: 1.2.2
+      Version: 2.0.0
 
   Ubuntu2004StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuBaseUpgradeComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Signal Sciences.
@@ -785,7 +800,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.2
+      Version: 5.0.0
 
   Ubuntu2204StandardImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -802,22 +817,22 @@ Resources:
         "lib:distribution": Ubuntu 22.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.3.1
+      Version: 2.0.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuBaseUpgradeComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallMatomoComponent.Arn
           Parameters:
             - Name: MatomoUrl
               Value:
-                - http://builds.matomo.org/matomo-4.16.1.zip
+                - !Ref MatomoUrl
             - Name: MatomoChecksum
               Value:
-                - 19aa3636794f07535ede84991d8b8287ddf378be160c204c98ba4465f87223eb
+                - !Ref MatomoChecksum
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
       Description: Patches OS, installs standard AWS tools, installs Matomo 4.16.0, installs Signal Sciences.
       Name: Matomo Host Image for Ubuntu 20_04
@@ -827,19 +842,19 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 4.1.5
+      Version: 5.0.0
 
   Ubuntu2310Drupal10HostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuBaseUpgradeComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentMantic.Arn
         - ComponentArn: !GetAtt UbuntuInstallDrupal10DependenciesComponent.Arn
           Parameters:
             - Name: ComposerInstallerChecksum
               Value:
-                - 8586e7c8ce2839946a253a9ca3284e525245c1f82d8bd1e221cef88a59d00a75
+                - !Ref ComposerChecksum
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
           Parameters:
             - Name: RepoName
@@ -853,7 +868,7 @@ Resources:
         "lib:distribution": Ubuntu 23.10
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.5
+      Version: 2.0.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -862,7 +877,7 @@ Resources:
     Type: AWS::ImageBuilder::ImageRecipe
     Properties:
       Components:
-        - ComponentArn: !GetAtt UbuntuBaseUpdateComponent.Arn
+        - ComponentArn: !GetAtt UbuntuBaseUpgradeComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallAwsToolsComponentFocal.Arn
         - ComponentArn: !GetAtt UbuntuInstallPerlComponent.Arn
           Parameters:
@@ -887,7 +902,7 @@ Resources:
         "lib:distribution": Ubuntu 20.04
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
-      Version: 1.1.2
+      Version: 2.0.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
