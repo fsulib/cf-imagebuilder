@@ -39,7 +39,14 @@ phases:
                 unzip \
                 binutils \
                 jq \
-                zip
+                zip \
+                libssl-dev \
+                stunnel \
+                rustc \
+                cargo \
+                pkg-config \
+                git \
+                nfs-common
       - name: DownloadTools
         action: WebDownload
         onFailure: Abort

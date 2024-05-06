@@ -37,7 +37,14 @@ phases:
                 binutils \
                 jq \
                 zip \
-                needrestart
+                needrestart \
+                libssl-dev \
+                stunnel \
+                rustc \
+                cargo \
+                pkg-config \
+                git \
+                nfs-common
       - name: DownloadTools
         action: WebDownload
         onFailure: Abort
