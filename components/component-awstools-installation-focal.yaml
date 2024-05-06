@@ -40,7 +40,7 @@ phases:
                 binutils \
                 jq \
                 zip \
-                needrestart
+                needrestart \
                 libssl-dev \
                 stunnel \
                 rustc \
