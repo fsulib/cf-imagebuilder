@@ -12,7 +12,7 @@ parameters:
       description: 'Key download file name.'
   - KeyChecksum:
       type: string
-      default: '6180cb1762d56eb128f64bde9964dd16c81eb508b9a1762f94b139233e79d02f'
+      default: '7625e96ea8d1bbbaab2dee395d60e1ed9007c1f8c95170b280b5e95830348122'
       description: 'Downloaded key SHA256 checksum.'
   - KeyRing:
       type: string
