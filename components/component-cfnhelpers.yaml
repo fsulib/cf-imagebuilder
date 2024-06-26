@@ -1,0 +1,45 @@
+name: 'Instal Cfn Helper Scripts into Python 3.11 Venv'
+description: 'This component installs python3.11 from the deadsnakes ppa, creates a virtual env, and installs the CloudFormation helper scripts into it.'
+schemaVersion: 1.0
+parameters:
+  - VenvDir:
+      type: string
+      default: '/opt/.venv'
+      description: 'Virtual environment location.'
+  - CfnScripts:
+      type: string
+      default: 'https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-py3-latest.tar.gz'
+      description: 'CloudFormation helper scripts location.'
+
+phases:
+  - name: build
+    steps:
+      - name: AddPPARepo
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              sudo add-apt-repository -y ppa:deadsnakes
+              sudo apt-get install -y \
+                python3.11 \
+                python3.11-venv \
+                python3.11-distutils \
+                python3.11-gdbm
+      - name: CreateVirtualEnv
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands: 
+            - python3.11 -m venv '{{ VenvDir }}'
+      - name: InstallHelpers
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              . '{{ VenvDir }}'/bin/activate
+              pip install '{{ CfnScripts }}'
