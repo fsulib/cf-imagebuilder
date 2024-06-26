@@ -1,0 +1,19 @@
+name: 'Install Base Packages'
+description: 'This component provides a base load of utility packages common to most workload instances.'
+schemaVersion: 1.0
+parameters:
+  - PackageList:
+      type: string
+      default: unzip zip jq git
+      description: 'Space separated list of packages to install'
+
+phases:
+  - name: build
+    steps:
+      - name: InstallPackages
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - echo '{{ PackageList }}' | xargs sudo apt-get install -y
