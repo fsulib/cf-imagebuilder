@@ -810,7 +810,7 @@ Resources:
           Parameters:
             - Name: PackageList
               Value:
-                - >
+                - >-
                   zip
                   jq
                   unzip
@@ -853,7 +853,7 @@ Resources:
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
         "lib:efshost": 'false'
-      Version: 1.0.0
+      Version: 1.0.1
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
