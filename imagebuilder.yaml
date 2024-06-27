@@ -487,19 +487,19 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.3
 
-  UbuntuBasePackagesComponent:
+  UbuntuInstallPackagesComponent:
     Type: AWS::ImageBuilder::Component
     Properties:
       ChangeDescription: 'Using a different method to expand PackageList parameter string.'
-      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-base-packages.yaml
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-install-packages.yaml
       Description: Installs an array of packages on a system, like git, jq, zip, etc.
-      Name: Install Base Packages
+      Name: Install Packages
       Platform: Linux
       Tags:
         'Name': 'Ubuntu Nase Packages Coponent'
         'lib:distribution': 'Ubuntu'
         'lib:created-by': !Ref Creator
-      Version: 1.0.2
+      Version: 1.0.0
 
   UbuntuBaseUpgradeComponent:
     Type: AWS::ImageBuilder::Component
@@ -748,6 +748,20 @@ Resources:
         'lib:created-by': !Ref Creator
       Version: 1.0.0
 
+  UbuntuInstallPHPComposerComponent:
+    Type: AWS::ImageBuilder::Component
+    Properties:
+      ChangeDescription: 'Initial version.'
+      Uri: !Sub s3://${ComponentBucket}/${ComponentPrefix}/component-install-composer.yaml
+      Description: Installs Composer, the world's most advanced Personal Home Page dependency manager.
+      Name: Install PHP Composer
+      Platform: Linux
+      Tags:
+        'Name': 'Ubuntu PHP Composer Installation Component'
+        'lib:distribution': 'Ubuntu'
+        'lib:created-by': !Ref Creator
+      Version: 1.0.0
+
 # Recipes
 
   Ubuntu2210Drupal10HostImageRecipe:
@@ -780,6 +794,66 @@ Resources:
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
       Version: 1.0.8
+      AdditionalInstanceConfiguration:
+        SystemsManagerAgent:
+          UninstallAfterBuild: false
+
+  Ubuntu2404Drupal10HostImageRecipe:
+    Type: AWS::ImageBuilder::ImageRecipe
+    Properties:
+      Components:
+        - ComponentArn: !FindInMap [AWSComponents, !Ref AWS::Region, updateLinux]
+        - ComponentArn: !FindInMap [AWSComponents, !Ref AWS::Region, cli]
+        - ComponentArn: !FindInMap [AWSComponents, !Ref AWS::Region, cwagent]
+        - ComponentArn: !GetAtt UbuntuInstallCfnHelpersComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallPackagesComponent.Arn
+          Parameters:
+            - Name: PackageList
+              Value:
+                - >
+                  zip
+                  jq
+                  unzip
+                  git
+                  apache2
+                  ghostscript
+                  libgd3
+                  mysql-client
+                  php
+                  php-cli
+                  php-common
+                  php-curl
+                  php-dev
+                  php-fpm
+                  php-gd
+                  php-json
+                  php-soap
+                  php-xml
+                  php-zip
+                  php-mysql
+                  php-date
+                  php-mbstring
+                  php-intl
+        - ComponentArn: !GetAtt UbuntuInstallPHPComposerComponent.Arn
+          Parameters:
+            - Name: ComposerInstallerChecksum
+              Value:
+                - !Ref ComposerChecksum
+        - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
+          Parameters:
+            - Name: RepoName
+              Value:
+                - noble
+      Description: Installs standard AWS tools, Drupal package dependencies, and PHP Composer.
+      Name: Drupal10 Host Image for Ubuntu 24_04
+      ParentImage: !Ref Ubuntu2404BaseAmiId
+      Tags:
+        "lib:created-by": !Ref Creator
+        "lib:distribution": Ubuntu 24.04
+        "lib:dockerhost": 'false'
+        "lib:signalsciences": 'true'
+        "lib:efshost": 'false'
+      Version: 1.0.0
       AdditionalInstanceConfiguration:
         SystemsManagerAgent:
           UninstallAfterBuild: false
@@ -869,11 +943,11 @@ Resources:
         - ComponentArn: !FindInMap [AWSComponents, !Ref AWS::Region, updateLinux]
         - ComponentArn: !FindInMap [AWSComponents, !Ref AWS::Region, cli]
         - ComponentArn: !FindInMap [AWSComponents, !Ref AWS::Region, cwagent]
-        - ComponentArn: !GetAtt UbuntuBasePackagesComponent.Arn
+        - ComponentArn: !GetAtt UbuntuInstallPackagesComponent.Arn
           Parameters:
             - Name: PackageList
               Value:
-                - unzip zip jq git apache2
+                - unzip zip jq git
         - ComponentArn: !GetAtt UbuntuInstallCfnHelpersComponent.Arn
         - ComponentArn: !GetAtt UbuntuInstallSignalSciencesComponent.Arn
           Parameters:
@@ -889,7 +963,7 @@ Resources:
         "lib:dockerhost": 'false'
         "lib:signalsciences": 'true'
         "lib:efshost": 'false'
-      Version: 1.0.3
+      Version: 1.1.0
 
   Ubuntu2004MatomoHostImageRecipe:
     Type: AWS::ImageBuilder::ImageRecipe
@@ -1272,6 +1346,40 @@ Resources:
         "Name": Drupal10Host Ubuntu 2310 Image Distribution
         "lib:created-by": !Ref Creator
 
+  Drupal10HostUbuntu2404Distribution:
+    Type: AWS::ImageBuilder::DistributionConfiguration
+    Properties:
+      Description: Ubuntu 2404 Drupal10Host Distribution
+      Distributions:
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal10Host-Ubuntu-2404
+              'lib:env': any
+              'lib:app': drupal10
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2404 Drupal10Host
+            Name: Drupal10Host-Ubuntu-2404_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: !Ref AWS::Region
+        - AmiDistributionConfiguration:
+            AmiTags:
+              Name: Drupal10Host-Ubuntu-2404
+              'lib:env': any
+              'lib:app': drupal10
+              'lib:build-version': build-{{imagebuilder:buildVersion}}
+            Description: Ubuntu 2404 Drupal10Host
+            Name: Drupal10Host-Ubuntu-2404_{{imagebuilder:buildDate}}
+            LaunchPermissionConfiguration:
+              OrganizationArns:
+                - !Ref OrganizationArn
+          Region: us-east-2
+      Name: Drupal10Host Ubuntu 2404 Image Distribution
+      Tags:
+        "Name": Drupal10Host Ubuntu 2404 Image Distribution
+        "lib:created-by": !Ref Creator
+
   RTHostUbuntu2004Distribution:
     Type: AWS::ImageBuilder::DistributionConfiguration
     Properties:
@@ -1471,5 +1579,24 @@ Resources:
         'lib:dockerhost': 'false'
         'lib:efshost': 'false'
 
+  Ubuntu2404Drupal10HostPipeline:
+    Type: AWS::ImageBuilder::ImagePipeline
+    Properties:
+      Description: Builds and distributes a Drupal10Host 2404 image
+      DistributionConfigurationArn: !Ref Drupal10HostUbuntu2404Distribution
+      EnhancedImageMetadataEnabled: true
+      ImageRecipeArn: !Ref Ubuntu2404Drupal10HostImageRecipe
+      ImageTestsConfiguration:
+        ImageTestsEnabled: true
+        TimeoutMinutes: !Ref ImageTestsTimeout
+      InfrastructureConfigurationArn: !Ref SimpleInfrastructureConfiguration
+      Name: Drupal10Host Pipeline for Ubuntu 2404
+      Status: ENABLED
+      Tags:
+        Name: Ubuntu 2404 Drupal10Host Pipeline
+        'lib:created-by': mshackelford
+        'lib:distribution': Ubuntu2404
+        'lib:dockerhost': 'false'
+        'lib:efshost': 'false'
 
 # vim: set fdm=indent:

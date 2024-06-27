@@ -1,0 +1,51 @@
+name: 'Install Composer'
+description: 'This component installs the Composer PHP dependency manager.'
+schemaVersion: 1.0
+parameters:
+  - ComposerInstallerChecksum:
+      type: string
+      description: 'SHA256 checksum of current composer installation script.'
+  - ComposerVersion:
+      type: string
+      default: 2.6.6
+      description: 'Specific Composer version to install.'
+phases:
+  - name: build
+    steps:
+      - name: GetComposer
+        action: WebDownload
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          - source: https://getcomposer.org/installer
+            destination: /root/composer-setup.php
+            checksum: '{{ ComposerInstallerChecksum }}'
+            algorithm: SHA256
+      - name: InstallComposer
+        action: ExecuteBash
+        onFailure: Abort
+        maxAttempts: 3
+        inputs:
+          commands:
+            - |
+              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root php /root/composer-setup.php --version={{ ComposerVersion }} --filename=composer --install-dir=/usr/local/bin
+              chmod +x /usr/local/bin/composer
+              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root /usr/local/bin/composer global config --no-plugins allow-plugins.zaporylie/composer-drupal-optimizations true
+              COMPOSER_ALLOW_SUPERUSER=1 HOME=/root /usr/local/bin/composer --no-interaction global require zaporylie/composer-drupal-optimizations
+              mkdir -p /root/.config/composer
+              rm /root/composer-setup.php
+  - name: validate
+    steps:
+      - name: ValidateComposerExecution
+        action: ExecuteBash
+        inputs:
+          commands:
+            - |
+              echo "Stand back, testing Composter."
+              COMPOSER_ALLOW_SUPERUSER=1 /usr/local/bin/composer -V > /dev/null
+              if test $? -ne 0; then 
+                echo "Composer failed to execute successfully." 1>&2
+                exit 1
+              fi
+              echo "Composter passed the test."
+              exit 0
