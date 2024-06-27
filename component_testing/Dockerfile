@@ -7,7 +7,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV DEBCONF_NONINTERACTIVE_SEEN=true
 WORKDIR /usr/local/bin
 
-FROM base as mantic
+FROM base AS noble
 RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/America select UTC" | debconf-set-selections && \
     apt-get update && \
@@ -24,7 +24,24 @@ VOLUME /root/components
 WORKDIR /root/components
 CMD ["/bin/bash"]
 
-FROM base as kinetic
+FROM base AS mantic
+RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
+    echo "tzdata tzdata/Zones/America select UTC" | debconf-set-selections && \
+    apt-get update && \
+    apt-get install -y \
+    tzdata \
+    ca-certificates \
+    wget \
+    sudo \
+    git \
+    apt-utils && \
+    wget https://awstoe-${AWS_REGION}.s3.${AWS_REGION}.amazonaws.com/latest/linux/amd64/awstoe && \
+    chmod +x /usr/local/bin/awstoe
+VOLUME /root/components
+WORKDIR /root/components
+CMD ["/bin/bash"]
+
+FROM base AS kinetic
 RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/America select UTC" | debconf-set-selections && \
     sed -i -e 's/archive/old-releases/g' -e 's/security/old-releases/' /etc/apt/sources.list && \
@@ -42,7 +59,7 @@ VOLUME /root/components
 WORKDIR /root/components
 CMD ["/bin/bash"]
 
-FROM base as jammy
+FROM base AS jammy
 RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/America select UTC" | debconf-set-selections && \
     apt-get update && \
@@ -59,7 +76,7 @@ VOLUME /root/components
 WORKDIR /root/components
 CMD ["/bin/bash"]
 
-FROM base as focal
+FROM base AS focal
 RUN echo "tzdata tzdata/Areas select Etc" | debconf-set-selections && \
     echo "tzdata tzdata/Zones/America select UTC" | debconf-set-selections && \
     apt-get update && \
